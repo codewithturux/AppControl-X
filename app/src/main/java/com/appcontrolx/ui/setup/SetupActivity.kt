@@ -45,6 +45,8 @@ class SetupActivity : AppCompatActivity() {
             fragments.add(XiaomiSetupFragment())
         }
         
+        // Add disclaimer before complete
+        fragments.add(DisclaimerFragment())
         fragments.add(SetupCompleteFragment())
         
         binding.viewPager.adapter = SetupPagerAdapter(this, fragments)

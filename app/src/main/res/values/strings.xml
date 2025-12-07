@@ -29,6 +29,19 @@
     <string name="setup_xiaomi_title">Xiaomi Setup</string>
     <string name="setup_complete_title">Setup Complete</string>
     
+    <!-- Disclaimer -->
+    <string name="disclaimer_title">Important Warning</string>
+    <string name="warning_icon_desc">Warning</string>
+    <string name="disclaimer_warning_title">⚠️ Use at Your Own Risk</string>
+    <string name="disclaimer_warning_text">This application provides powerful system-level controls that can significantly affect your device\'s functionality. Improper use may cause apps to malfunction, data loss, or system instability.</string>
+    <string name="disclaimer_points_title">Please understand that:</string>
+    <string name="disclaimer_point_1">Freezing or disabling system apps may cause your device to become unstable or unusable</string>
+    <string name="disclaimer_point_2">Some changes may not be reversible without factory reset or advanced recovery methods</string>
+    <string name="disclaimer_point_3">The developer is NOT responsible for any damage, data loss, or issues caused by using this app</string>
+    <string name="disclaimer_point_4">Always create a backup before making significant changes to your system</string>
+    <string name="disclaimer_agree">I understand the risks and accept full responsibility for any consequences</string>
+    <string name="disclaimer_accept">I Accept &amp; Continue</string>
+    
     <!-- Xiaomi -->
     <string name="miui_detected">MIUI %d detected</string>
     <string name="hyperos_detected">HyperOS %.1f detected</string>
