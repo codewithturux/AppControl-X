@@ -76,17 +76,17 @@ class ToolsFragment : Fragment() {
             }
         }
         
-        // Performance Mode - Xiaomi/MIUI/HyperOS
+        // Power Mode Settings
         binding.itemPerformanceMode.setOnClickListener {
             val intents = listOf(
-                // Xiaomi Game Turbo
-                "com.miui.securitycenter" to "com.miui.gamebooster.ui.GameBoosterMainActivity",
-                // MIUI Performance Mode
+                // AOSP Power Mode Settings
+                "com.android.settings" to "com.android.settings.Settings\$PowerModeSettingsActivity",
+                // Alternative Power/Battery Settings
+                "com.android.settings" to "com.android.settings.fuelgauge.batterysaver.BatterySaverSettings",
+                // Xiaomi Power Mode
                 "com.miui.powerkeeper" to "com.miui.powerkeeper.ui.HiddenAppsConfigActivity",
-                // Android Game Dashboard
-                "com.android.settings" to "com.android.settings.Settings\$GameDashboardActivity",
-                // Samsung Game Launcher
-                "com.samsung.android.game.gamehome" to "com.samsung.android.game.gamehome.MainActivity"
+                // Samsung Power Mode
+                "com.samsung.android.lool" to "com.samsung.android.sm.ui.battery.BatteryActivity"
             )
             tryOpenSettings(intents)
         }
