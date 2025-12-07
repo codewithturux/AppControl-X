@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.appcontrolx.R
 import com.appcontrolx.databinding.ActivitySetupBinding
-import com.appcontrolx.service.XiaomiBridge
 import com.appcontrolx.ui.MainActivity
 import com.appcontrolx.utils.Constants
 
@@ -36,29 +35,16 @@ class SetupActivity : AppCompatActivity() {
     }
     
     private fun setupViewPager() {
-        val fragments = mutableListOf<Fragment>(
-            ModeSelectionFragment(),
-            PermissionsFragment()
+        // Simplified setup: just disclaimer
+        val fragments = listOf<Fragment>(
+            DisclaimerFragment()
         )
-        
-        if (XiaomiBridge(this, null).isXiaomiDevice()) {
-            fragments.add(XiaomiSetupFragment())
-        }
-        
-        // Add disclaimer before complete
-        fragments.add(DisclaimerFragment())
-        fragments.add(SetupCompleteFragment())
         
         binding.viewPager.adapter = SetupPagerAdapter(this, fragments)
         binding.viewPager.isUserInputEnabled = false
         
-        setupDotsIndicator(fragments.size)
-        
-        binding.viewPager.registerOnPageChangeCallback(object : androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                updateDotsIndicator(position)
-            }
-        })
+        // Hide dots for single page
+        binding.dotsIndicator.visibility = View.GONE
     }
     
     private fun setupDotsIndicator(count: Int) {

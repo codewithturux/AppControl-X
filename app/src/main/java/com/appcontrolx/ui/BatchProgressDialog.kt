@@ -2,9 +2,6 @@ package com.appcontrolx.ui
 
 import android.app.Dialog
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import com.appcontrolx.R
 import com.appcontrolx.databinding.DialogBatchProgressBinding
@@ -16,8 +13,8 @@ class BatchProgressDialog : DialogFragment() {
     private val binding get() = _binding
     
     private var totalCount = 0
-    private var currentIndex = 0
     private var actionName = ""
+    private val logEntries = mutableListOf<String>()
     
     companion object {
         const val TAG = "BatchProgressDialog"
@@ -38,7 +35,7 @@ class BatchProgressDialog : DialogFragment() {
             b.progressBar.max = totalCount
             b.progressBar.progress = 0
             b.tvProgress.text = getString(R.string.batch_progress, 0, totalCount)
-            b.tvCurrentApp.text = getString(R.string.batch_preparing)
+            b.tvLog.text = getString(R.string.batch_preparing)
         }
         
         return MaterialAlertDialogBuilder(requireContext())
@@ -47,12 +44,20 @@ class BatchProgressDialog : DialogFragment() {
             .create()
     }
     
-    fun updateProgress(appName: String, index: Int) {
-        currentIndex = index
+    fun addLogEntry(packageName: String, status: String, isSuccess: Boolean) {
+        val statusIcon = if (isSuccess) "✓" else "✗"
+        val entry = "$statusIcon $packageName → $status"
+        logEntries.add(entry)
+        
         binding?.let { b ->
-            b.progressBar.progress = index
-            b.tvProgress.text = getString(R.string.batch_progress, index, totalCount)
-            b.tvCurrentApp.text = appName
+            b.progressBar.progress = logEntries.size
+            b.tvProgress.text = getString(R.string.batch_progress, logEntries.size, totalCount)
+            b.tvLog.text = logEntries.takeLast(10).joinToString("\n")
+            
+            // Auto scroll to bottom
+            b.scrollView.post {
+                b.scrollView.fullScroll(android.view.View.FOCUS_DOWN)
+            }
         }
     }
     
@@ -60,11 +65,14 @@ class BatchProgressDialog : DialogFragment() {
         binding?.let { b ->
             b.progressBar.progress = totalCount
             b.tvProgress.text = getString(R.string.batch_completed)
-            b.tvCurrentApp.text = if (failCount == 0) {
+            
+            val summary = if (failCount == 0) {
                 getString(R.string.batch_all_success, successCount)
             } else {
                 getString(R.string.batch_partial_success, successCount, failCount)
             }
+            logEntries.add("\n$summary")
+            b.tvLog.text = logEntries.joinToString("\n")
         }
     }
     

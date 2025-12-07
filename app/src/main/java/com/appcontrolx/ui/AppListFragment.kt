@@ -281,28 +281,40 @@ class AppListFragment : Fragment() {
             getString(R.string.warning_force_stop_only, packages.size), 
             Toast.LENGTH_LONG).show()
     }
+    
+    private fun getStatusText(action: ActionBottomSheet.Action, success: Boolean): String {
+        return if (success) {
+            when (action) {
+                ActionBottomSheet.Action.FREEZE -> "Frozen"
+                ActionBottomSheet.Action.UNFREEZE -> "Enabled"
+                ActionBottomSheet.Action.UNINSTALL -> "Uninstalled"
+                ActionBottomSheet.Action.FORCE_STOP -> "Stopped"
+                ActionBottomSheet.Action.RESTRICT_BACKGROUND -> "Restricted"
+                ActionBottomSheet.Action.ALLOW_BACKGROUND -> "Allowed"
+            }
+        } else {
+            "Failed"
+        }
+    }
 
     private fun executeAction(action: ActionBottomSheet.Action, packages: List<String>) {
         val pm = policyManager ?: return
         val rm = rollbackManager
         
-        // Show progress dialog
+        // Show progress dialog with live log
         val progressDialog = BatchProgressDialog.newInstance(action.name, packages.size)
         progressDialog.show(childFragmentManager, BatchProgressDialog.TAG)
         
         lifecycleScope.launch {
+            var successCount = 0
+            var failCount = 0
+            
             try {
                 rm?.saveSnapshot(packages)
                 
-                val results = mutableListOf<Pair<String, Result<Unit>>>()
-                
                 withTimeout(ACTION_TIMEOUT_MS) {
-                    packages.forEachIndexed { index, pkg ->
-                        // Update progress on main thread
-                        withContext(Dispatchers.Main) {
-                            val appName = adapter.getAppName(pkg) ?: pkg
-                            progressDialog.updateProgress(appName, index + 1)
-                        }
+                    for (pkg in packages) {
+                        val appName = adapter.getAppName(pkg) ?: pkg.substringAfterLast(".")
                         
                         // Execute on IO thread
                         val result = withContext(Dispatchers.IO) {
@@ -315,14 +327,18 @@ class AppListFragment : Fragment() {
                                 ActionBottomSheet.Action.ALLOW_BACKGROUND -> pm.allowBackground(pkg)
                             }
                         }
-                        results.add(pkg to result)
+                        
+                        // Update log on main thread
+                        withContext(Dispatchers.Main) {
+                            val status = getStatusText(action, result.isSuccess)
+                            progressDialog.addLogEntry(appName, status, result.isSuccess)
+                        }
+                        
+                        if (result.isSuccess) successCount++ else failCount++
                     }
                 }
                 
-                val successCount = results.count { it.second.isSuccess }
-                val failCount = results.count { it.second.isFailure }
-                
-                // Show completion in dialog
+                // Show completion
                 progressDialog.setCompleted(successCount, failCount)
                 
                 rm?.logAction(ActionLog(
@@ -333,12 +349,12 @@ class AppListFragment : Fragment() {
                 ))
                 
                 // Delay before dismiss
-                kotlinx.coroutines.delay(1500)
+                kotlinx.coroutines.delay(2000)
                 progressDialog.dismiss()
                 
                 adapter.deselectAll()
                 clearCache()
-                loadApps()
+                loadApps(forceRefresh = true)
                 
             } catch (e: TimeoutCancellationException) {
                 progressDialog.dismiss()
