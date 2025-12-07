@@ -76,6 +76,7 @@ class ToolsFragment : Fragment() {
         // Power Mode Settings
         binding.itemPerformanceMode.setOnClickListener {
             val intents = listOf(
+                "com.android.settings" to "com.android.settings.fuelgauge.PowerModeSettings",
                 "com.android.settings" to "com.android.settings.Settings\$PowerModeSettingsActivity",
                 "com.android.settings" to "com.android.settings.fuelgauge.batterysaver.BatterySaverSettings",
                 "com.miui.powerkeeper" to "com.miui.powerkeeper.ui.HiddenAppsConfigActivity",
@@ -100,6 +101,7 @@ class ToolsFragment : Fragment() {
         // Device Diagnostic
         binding.itemRunningServices.setOnClickListener {
             val intents = listOf(
+                "com.android.devicediagnostics" to "com.android.devicediagnostics.MainActivity",
                 "com.android.settings" to "com.android.settings.deviceinfo.aboutphone.DeviceDiagnostic",
                 "com.android.settings" to "com.android.settings.Settings\$DevRunningServicesActivity",
                 "com.android.settings" to "com.android.settings.applications.RunningServices"
