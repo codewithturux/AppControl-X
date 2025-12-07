@@ -56,9 +56,8 @@ class MainActivity : AppCompatActivity() {
             |• Batch operations with progress
             |• Activity Launcher
             |• Action Logs with rollback
-            |• Status filter (Running/Stopped/Frozen/Restricted)
+            |• Status filter
             |• Dark/Light theme
-            |• Multi-language (EN/ID)
         """.trimMargin()
         
         MaterialAlertDialogBuilder(this)

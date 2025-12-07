@@ -208,7 +208,7 @@
     <string name="about_version_format">Version %1$s (%2$d)</string>
     <string name="about_features_title">Features</string>
     <string name="about_features_list">• Freeze/Unfreeze apps (disable without uninstall)\n• Force stop running apps\n• Restrict background activity\n• Batch operations on multiple apps\n• System app protection\n• Rollback with state snapshots\n• Root and Shizuku support\n• Material You design</string>
-    <string name="about_features_short">Freeze/Unfreeze • Force Stop • Restrict Background • Clear Cache/Data • Batch Operations • Activity Launcher • Action Logs • Root &amp; Shizuku</string>
+    <string name="about_features_short">• Freeze/Unfreeze apps\n• Force Stop\n• Restrict/Allow Background\n• Clear Cache/Data\n• Batch Operations\n• Activity Launcher\n• Action Logs with Rollback\n• Root &amp; Shizuku support</string>
     <string name="about_system_title">Device Info</string>
     <string name="about_device">Device</string>
     <string name="about_device_format">%1$s %2$s</string>
