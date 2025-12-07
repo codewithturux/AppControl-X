@@ -48,16 +48,15 @@ class MainActivity : AppCompatActivity() {
     
     private fun showWhatsNewDialog() {
         val whatsNew = """
-            |🏗️ MVVM Architecture + Hilt DI
-            |🔥 Firebase Crashlytics integration
-            |⚡ Optimized release build (ProGuard)
-            |📊 Beautiful About page with stats
-            |🚀 Activity Launcher with expandable groups
-            |🎯 Enhanced batch operations
-            |🔒 Runtime root/shizuku validation
-            |🛡️ Enhanced security & input validation
-            |🎨 Dark/Light theme toggle
-            |✨ Clean UI improvements
+            |• MVVM Architecture + Hilt DI
+            |• Optimized release build (ProGuard)
+            |• Beautiful About page with stats
+            |• Activity Launcher with expandable groups
+            |• Enhanced batch operations
+            |• Runtime root/shizuku validation
+            |• Enhanced security & input validation
+            |• Dark/Light theme toggle
+            |• Clean UI improvements
         """.trimMargin()
         
         MaterialAlertDialogBuilder(this)
