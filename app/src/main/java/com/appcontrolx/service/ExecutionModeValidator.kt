@@ -1,31 +1,31 @@
 package com.appcontrolx.service
 
 import android.content.Context
-import com.appcontrolx.data.local.SettingsDataStore
+import androidx.preference.PreferenceManager
 import com.appcontrolx.utils.Constants
-import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class ExecutionModeValidator @Inject constructor(
     private val context: Context,
-    private val permissionBridge: PermissionBridge,
-    private val settingsDataStore: SettingsDataStore
+    private val permissionBridge: PermissionBridge
 ) {
+    
+    private val prefs by lazy { PreferenceManager.getDefaultSharedPreferences(context) }
     
     /**
      * Validate current execution mode and fallback to view-only if needed
      */
-    suspend fun validateAndFallback(): ValidationResult {
-        val currentMode = settingsDataStore.executionMode.first()
+    fun validateAndFallback(): ValidationResult {
+        val currentMode = prefs.getString(Constants.PREFS_EXECUTION_MODE, Constants.MODE_NONE) ?: Constants.MODE_NONE
         
         return when (currentMode) {
             Constants.MODE_ROOT -> {
                 if (permissionBridge.isRootAvailable()) {
                     ValidationResult.Valid(currentMode)
                 } else {
-                    settingsDataStore.setExecutionMode(Constants.MODE_NONE)
+                    prefs.edit().putString(Constants.PREFS_EXECUTION_MODE, Constants.MODE_NONE).apply()
                     ValidationResult.Fallback(Constants.MODE_NONE, "Root access is no longer available")
                 }
             }
@@ -34,7 +34,7 @@ class ExecutionModeValidator @Inject constructor(
                 if (permissionBridge.isShizukuReady()) {
                     ValidationResult.Valid(currentMode)
                 } else {
-                    settingsDataStore.setExecutionMode(Constants.MODE_NONE)
+                    prefs.edit().putString(Constants.PREFS_EXECUTION_MODE, Constants.MODE_NONE).apply()
                     ValidationResult.Fallback(Constants.MODE_NONE, "Shizuku is no longer available")
                 }
             }
