@@ -16,8 +16,12 @@ class RootExecutor : CommandExecutor {
             "appops set",
             "appops get",
             "cmd appops",
+            "cmd activity",
             "getprop",
-            "dumpsys"
+            "dumpsys activity",
+            "dumpsys package",
+            "ps -A",
+            "cat /proc"
         )
         
         // Dangerous patterns that should never be executed
