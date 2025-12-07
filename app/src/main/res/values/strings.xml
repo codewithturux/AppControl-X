@@ -278,7 +278,7 @@
     <string name="tools_activity_count">%d activities</string>
     <string name="tools_activity_launch_failed">Failed to launch activity</string>
     <string name="activity_launcher_subtitle">Tap app to expand, tap activity to launch</string>
-    <string name="activity_launcher_hint">💡 Hold activity to copy path</string>
+    <string name="activity_launcher_hint">Tip: Hold activity to copy path</string>
     <string name="activity_launcher_count">%1$d apps • %2$d activities</string>
     <string name="search_hint">Search apps or activities…</string>
     <string name="search_apps_hint">Search apps…</string>

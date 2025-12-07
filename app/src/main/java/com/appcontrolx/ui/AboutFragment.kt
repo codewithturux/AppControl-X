@@ -12,7 +12,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.appcontrolx.R
 import com.appcontrolx.databinding.FragmentAboutBinding
-import com.appcontrolx.executor.RootExecutor
 import com.appcontrolx.model.ExecutionMode
 import com.appcontrolx.rollback.RollbackManager
 import com.appcontrolx.service.PermissionBridge
@@ -86,12 +85,8 @@ class AboutFragment : Fragment() {
                     }
                 }
                 
-                // Get action count from RollbackManager
-                val mode = PermissionBridge(requireContext()).detectMode()
-                val actions = if (mode is ExecutionMode.Root) {
-                    val executor = RootExecutor()
-                    RollbackManager(requireContext(), executor).getLogCount()
-                } else 0
+                // Get action count from RollbackManager (no executor needed for reading)
+                val actions = RollbackManager(requireContext()).getLogCount()
                 
                 Triple(user, system, actions)
             }
