@@ -16,6 +16,8 @@ import com.appcontrolx.executor.CommandExecutor
 import com.appcontrolx.executor.RootExecutor
 import com.appcontrolx.model.AppInfo
 import com.appcontrolx.model.ExecutionMode
+import com.appcontrolx.rollback.ActionLog
+import com.appcontrolx.rollback.RollbackManager
 import com.appcontrolx.service.BackgroundStatus
 import com.appcontrolx.service.BatteryPolicyManager
 import com.appcontrolx.service.PermissionBridge
@@ -38,6 +40,7 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
     private var appInfo: AppInfo? = null
     private var executor: CommandExecutor? = null
     private var policyManager: BatteryPolicyManager? = null
+    private var rollbackManager: RollbackManager? = null
     private var executionMode: ExecutionMode = ExecutionMode.None
     private var currentBgStatus: BackgroundStatus = BackgroundStatus.DEFAULT
     
@@ -87,6 +90,7 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
         if (executionMode is ExecutionMode.Root) {
             executor = RootExecutor()
             policyManager = BatteryPolicyManager(executor!!)
+            rollbackManager = RollbackManager(requireContext(), executor!!)
         }
     }
     
@@ -222,54 +226,55 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
         
         binding.btnForceStop.setOnClickListener {
             if (isCritical) { showProtectedWarning(); return@setOnClickListener }
-            executeActionWithLoading(getString(R.string.action_force_stop)) { 
+            executeActionWithLoading(getString(R.string.action_force_stop), { 
                 policyManager?.forceStop(appInfo!!.packageName) 
-            }
+            }, "FORCE_STOP")
         }
         
         binding.btnToggleEnable.setOnClickListener {
             if (isForceStopOnly || isCritical) { showProtectedWarning(); return@setOnClickListener }
             val app = appInfo ?: return@setOnClickListener
             val actionName = if (app.isEnabled) getString(R.string.action_freeze) else getString(R.string.action_unfreeze)
-            executeActionWithLoading(actionName) {
+            val logAction = if (app.isEnabled) "FREEZE" else "UNFREEZE"
+            executeActionWithLoading(actionName, {
                 if (app.isEnabled) policyManager?.freezeApp(app.packageName)
                 else policyManager?.unfreezeApp(app.packageName)
-            }
+            }, logAction)
         }
         
         binding.btnRestrictBg.setOnClickListener {
             if (isForceStopOnly || isCritical) { showProtectedWarning(); return@setOnClickListener }
-            executeBackgroundAction(getString(R.string.action_restrict_bg)) {
+            executeBackgroundAction(getString(R.string.action_restrict_bg), "RESTRICT_BACKGROUND") {
                 policyManager?.restrictBackground(appInfo!!.packageName)
             }
         }
         
         binding.btnAllowBg.setOnClickListener {
             if (isForceStopOnly || isCritical) { showProtectedWarning(); return@setOnClickListener }
-            executeBackgroundAction(getString(R.string.action_allow_bg)) {
+            executeBackgroundAction(getString(R.string.action_allow_bg), "ALLOW_BACKGROUND") {
                 policyManager?.allowBackground(appInfo!!.packageName)
             }
         }
         
         binding.btnClearCache.setOnClickListener {
             if (isCritical) { showProtectedWarning(); return@setOnClickListener }
-            executeActionWithLoading(getString(R.string.action_clear_cache)) {
+            executeActionWithLoading(getString(R.string.action_clear_cache), {
                 executor?.execute("pm clear --cache-only ${appInfo!!.packageName}")?.map { }
-            }
+            }, "CLEAR_CACHE")
         }
         
         binding.btnClearData.setOnClickListener {
             if (isCritical) { showProtectedWarning(); return@setOnClickListener }
-            executeActionWithLoading(getString(R.string.action_clear_data)) {
+            executeActionWithLoading(getString(R.string.action_clear_data), {
                 executor?.execute("pm clear ${appInfo!!.packageName}")?.map { }
-            }
+            }, "CLEAR_DATA")
         }
         
         binding.btnUninstall.setOnClickListener {
             if (isForceStopOnly || isCritical) { showProtectedWarning(); return@setOnClickListener }
-            executeActionWithLoading(getString(R.string.action_uninstall)) { 
+            executeActionWithLoading(getString(R.string.action_uninstall), { 
                 policyManager?.uninstallApp(appInfo!!.packageName) 
-            }
+            }, "UNINSTALL")
         }
         
         binding.btnLaunchApp.setOnClickListener { launchApp() }
@@ -294,7 +299,7 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
         Toast.makeText(context, R.string.error_protected_app, Toast.LENGTH_SHORT).show()
     }
     
-    private fun executeActionWithLoading(actionName: String, action: suspend () -> Result<Unit>?) {
+    private fun executeActionWithLoading(actionName: String, action: suspend () -> Result<Unit>?, logActionName: String? = null) {
         if (policyManager == null) {
             Toast.makeText(context, R.string.error_mode_required_message, Toast.LENGTH_SHORT).show()
             return
@@ -308,7 +313,21 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
         lifecycleScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) { action() }
-                if (result?.isSuccess == true) {
+                val success = result?.isSuccess == true
+                
+                // Log action
+                if (logActionName != null && appInfo != null) {
+                    withContext(Dispatchers.IO) {
+                        rollbackManager?.logAction(ActionLog(
+                            action = logActionName,
+                            packages = listOf(appInfo!!.packageName),
+                            success = success,
+                            message = if (success) null else "Failed"
+                        ))
+                    }
+                }
+                
+                if (success) {
                     binding.tvActionStatus.text = getString(R.string.action_completed, actionName)
                     binding.tvActionStatus.setTextColor(resources.getColor(R.color.status_positive, null))
                     onActionCompleted?.invoke()
@@ -331,7 +350,7 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
         }
     }
     
-    private fun executeBackgroundAction(actionName: String, action: suspend () -> Result<Unit>?) {
+    private fun executeBackgroundAction(actionName: String, logActionName: String, action: suspend () -> Result<Unit>?) {
         if (policyManager == null) {
             Toast.makeText(context, R.string.error_mode_required_message, Toast.LENGTH_SHORT).show()
             return
@@ -345,7 +364,21 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
         lifecycleScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) { action() }
-                if (result?.isSuccess == true) {
+                val success = result?.isSuccess == true
+                
+                // Log action
+                if (appInfo != null) {
+                    withContext(Dispatchers.IO) {
+                        rollbackManager?.logAction(ActionLog(
+                            action = logActionName,
+                            packages = listOf(appInfo!!.packageName),
+                            success = success,
+                            message = if (success) null else "Failed"
+                        ))
+                    }
+                }
+                
+                if (success) {
                     // Refresh background status
                     val packageName = appInfo?.packageName ?: return@launch
                     currentBgStatus = withContext(Dispatchers.IO) {

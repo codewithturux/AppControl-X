@@ -12,6 +12,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.appcontrolx.R
 import com.appcontrolx.databinding.FragmentAboutBinding
+import com.appcontrolx.executor.RootExecutor
+import com.appcontrolx.model.ExecutionMode
+import com.appcontrolx.rollback.RollbackManager
 import com.appcontrolx.service.PermissionBridge
 import android.util.Log
 import dagger.hilt.android.AndroidEntryPoint
@@ -68,7 +71,7 @@ class AboutFragment : Fragment() {
         val b = binding ?: return
         
         lifecycleScope.launch {
-            val (userApps, systemApps) = withContext(Dispatchers.IO) {
+            val (userApps, systemApps, actionsCount) = withContext(Dispatchers.IO) {
                 val pm = requireContext().packageManager
                 val packages = pm.getInstalledPackages(0)
                 
@@ -83,14 +86,19 @@ class AboutFragment : Fragment() {
                     }
                 }
                 
-                Pair(user, system)
+                // Get action count from RollbackManager
+                val mode = PermissionBridge(requireContext()).detectMode()
+                val actions = if (mode is ExecutionMode.Root) {
+                    val executor = RootExecutor()
+                    RollbackManager(requireContext(), executor).getLogCount()
+                } else 0
+                
+                Triple(user, system, actions)
             }
             
             b.tvUserAppsCount.text = userApps.toString()
             b.tvSystemAppsCount.text = systemApps.toString()
-            
-            // Actions count from prefs (placeholder for now)
-            b.tvActionsCount.text = "0"
+            b.tvActionsCount.text = actionsCount.toString()
         }
     }
     

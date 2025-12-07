@@ -55,8 +55,8 @@ class ActionLogAdapter(
                 binding.tvStatus.setTextColor(context.getColor(R.color.status_negative))
             }
             
-            // Rollback button - only show for reversible actions
-            val canRollback = log.action in listOf("FREEZE", "UNFREEZE", "RESTRICT_BACKGROUND", "ALLOW_BACKGROUND")
+            // Rollback button - only show for RESTRICT_BACKGROUND and FREEZE
+            val canRollback = log.action in listOf("RESTRICT_BACKGROUND", "FREEZE")
             binding.btnRollback.visibility = if (canRollback) View.VISIBLE else View.GONE
             binding.btnRollback.setOnClickListener {
                 onRollbackClick(log)
