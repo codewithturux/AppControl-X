@@ -283,82 +283,11 @@
         android:textStyle="bold"
         android:textSize="14sp" />
 
-    <!-- Row 1: Force Stop, Freeze/Unfreeze -->
+    <!-- Primary Actions: Launch & Settings -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:orientation="horizontal">
-        <Button
-            android:id="@+id/btnForceStop"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/action_force_stop"
-            style="@style/Widget.Material3.Button.OutlinedButton" />
-        <Button
-            android:id="@+id/btnToggleEnable"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:text="@string/action_disable"
-            style="@style/Widget.Material3.Button.OutlinedButton" />
-    </LinearLayout>
-
-    <!-- Row 2: Background, Uninstall -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:orientation="horizontal">
-        <Button
-            android:id="@+id/btnToggleBackground"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/action_restrict_bg"
-            style="@style/Widget.Material3.Button.OutlinedButton" />
-        <Button
-            android:id="@+id/btnUninstall"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:text="@string/action_uninstall"
-            android:textColor="@color/status_negative"
-            style="@style/Widget.Material3.Button.OutlinedButton" />
-    </LinearLayout>
-
-    <!-- Row 3: Clear Cache, Clear Data -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:orientation="horizontal">
-        <Button
-            android:id="@+id/btnClearCache"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/action_clear_cache"
-            style="@style/Widget.Material3.Button.OutlinedButton" />
-        <Button
-            android:id="@+id/btnClearData"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:text="@string/action_clear_data"
-            android:textColor="@color/warning_color"
-            style="@style/Widget.Material3.Button.OutlinedButton" />
-    </LinearLayout>
-
-    <!-- Row 4: Launch, Open Settings -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:orientation="horizontal">
         <Button
             android:id="@+id/btnLaunchApp"
@@ -373,7 +302,70 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
-            android:text="@string/detail_open_settings"
+            android:text="@string/btn_info"
             style="@style/Widget.Material3.Button.TonalButton" />
     </LinearLayout>
+
+    <!-- Control Actions -->
+    <com.google.android.material.chip.ChipGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        app:singleLine="false">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/btnForceStop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/action_force_stop"
+            app:chipBackgroundColor="@color/surface_container"
+            app:chipStrokeWidth="1dp"
+            app:chipStrokeColor="@color/outline" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/btnToggleEnable"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/action_freeze"
+            app:chipBackgroundColor="@color/surface_container"
+            app:chipStrokeWidth="1dp"
+            app:chipStrokeColor="@color/outline" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/btnToggleBackground"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/action_restrict_bg"
+            app:chipBackgroundColor="@color/surface_container"
+            app:chipStrokeWidth="1dp"
+            app:chipStrokeColor="@color/outline" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/btnClearCache"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/action_clear_cache"
+            app:chipBackgroundColor="@color/surface_container"
+            app:chipStrokeWidth="1dp"
+            app:chipStrokeColor="@color/outline" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/btnClearData"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/action_clear_data"
+            app:chipBackgroundColor="@color/surface_container"
+            app:chipStrokeWidth="1dp"
+            app:chipStrokeColor="@color/outline" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/btnUninstall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/action_uninstall"
+            app:chipBackgroundColor="@color/surface_container"
+            app:chipStrokeWidth="1dp"
+            app:chipStrokeColor="@color/status_negative" />
+
+    </com.google.android.material.chip.ChipGroup>
 </LinearLayout>
