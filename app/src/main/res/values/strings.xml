@@ -317,6 +317,9 @@
     <string name="action_clear_cache">Clear Cache</string>
     <string name="action_clear_data">Clear Data</string>
     <string name="action_danger_zone">Danger Zone</string>
+    <string name="action_section_safe">Safe Actions</string>
+    <string name="action_section_caution">Caution</string>
+    <string name="batch_tip">Tip: Actions will be applied to all selected apps. System apps are protected.</string>
     <string name="action_launch">Launch</string>
     <string name="action_launch_apps">Launch Apps</string>
     <string name="error_no_launcher">App has no launcher activity</string>
