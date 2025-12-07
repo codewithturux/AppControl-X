@@ -417,7 +417,7 @@ class AppListFragment : Fragment() {
                     }
                 }
             },
-            onComplete = { successCount, failCount ->
+            onComplete = { _, failCount ->
                 // Log action
                 lifecycleScope.launch(Dispatchers.IO) {
                     rm?.logAction(ActionLog(
