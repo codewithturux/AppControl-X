@@ -64,10 +64,10 @@ class PermissionBridge(private val context: Context? = null) {
      */
     fun checkRootNow(): Boolean {
         return try {
-            // Initialize shell if needed
-            if (!Shell.isAppGrantedRoot()!!) {
-                Shell.getShell() // This will trigger root request
-            }
+            // Get shell instance - this will trigger root request if needed
+            val shell = Shell.getShell()
+            
+            // Check if root was granted
             Shell.isAppGrantedRoot() == true
         } catch (e: Exception) {
             false
