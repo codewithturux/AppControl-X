@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.core.os.LocaleListCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
@@ -90,64 +89,7 @@ class SettingsFragment : Fragment() {
         }
     }
     
-    private fun setupLanguage() {
-        updateLanguageText()
-        
-        binding.itemLanguage.setOnClickListener {
-            val languages = arrayOf(
-                getString(R.string.language_system),
-                getString(R.string.language_english),
-                getString(R.string.language_indonesian)
-            )
-            val languageCodes = arrayOf("system", "en", "id")
-            
-            // Get current from prefs (more reliable)
-            val savedLang = prefs.getString(Constants.PREFS_LANGUAGE, "system") ?: "system"
-            val currentIndex = languageCodes.indexOf(savedLang).coerceAtLeast(0)
-            
-            MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.settings_language)
-                .setSingleChoiceItems(languages, currentIndex) { dialog, which ->
-                    val selectedLang = languageCodes[which]
-                    applyLanguage(selectedLang)
-                    dialog.dismiss()
-                }
-                .setNegativeButton(android.R.string.cancel, null)
-                .show()
-        }
-    }
-    
-    private fun updateLanguageText() {
-        // Check from prefs first (more reliable), then AppCompatDelegate
-        val savedLang = prefs.getString(Constants.PREFS_LANGUAGE, null)
-        val currentLocales = AppCompatDelegate.getApplicationLocales()
-        val langTag = savedLang ?: if (currentLocales.isEmpty) "system" else currentLocales.toLanguageTags()
-        
-        binding.tvCurrentLanguage.text = when {
-            langTag.startsWith("en") -> getString(R.string.language_english)
-            langTag.startsWith("id") -> getString(R.string.language_indonesian)
-            else -> getString(R.string.language_system)
-        }
-    }
-    
-    private fun applyLanguage(langCode: String) {
-        // Save to prefs for persistence
-        prefs.edit().putString(Constants.PREFS_LANGUAGE, langCode).apply()
-        
-        // Use AppCompatDelegate for proper locale handling (Android 13+ compatible)
-        val localeList = when (langCode) {
-            "en" -> LocaleListCompat.forLanguageTags("en")
-            "id" -> LocaleListCompat.forLanguageTags("id")
-            else -> LocaleListCompat.getEmptyLocaleList() // System default
-        }
-        
-        AppCompatDelegate.setApplicationLocales(localeList)
-        
-        // For older Android versions, we need to restart the app
-        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
-            restartApp()
-        }
-    }
+
     
     private fun setupCurrentMode() {
         updateModeDisplay()

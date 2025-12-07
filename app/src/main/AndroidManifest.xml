@@ -16,8 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppControlX"
         android:fullBackupContent="@xml/backup_rules"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:localeConfig="@xml/locales_config">
+        android:dataExtractionRules="@xml/data_extraction_rules">
 
         <!-- Setup Activity (Launcher) -->
         <activity

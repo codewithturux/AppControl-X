@@ -47,21 +47,23 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun showWhatsNewDialog() {
-        val whatsNew = """
-            |• MVVM Architecture + Hilt DI
-            |• Optimized release build (ProGuard)
-            |• Beautiful About page with stats
-            |• Activity Launcher with expandable groups
-            |• Enhanced batch operations
-            |• Runtime root/shizuku validation
-            |• Enhanced security & input validation
-            |• Dark/Light theme toggle
-            |• Clean UI improvements
+        val updateLog = """
+            |v1.0.0
+            |• Initial release
+            |• Freeze/Unfreeze apps
+            |• Force Stop & Clear Cache/Data
+            |• Restrict/Allow Background
+            |• Batch operations with progress
+            |• Activity Launcher
+            |• Action Logs with rollback
+            |• Status filter (Running/Stopped/Frozen/Restricted)
+            |• Dark/Light theme
+            |• Multi-language (EN/ID)
         """.trimMargin()
         
         MaterialAlertDialogBuilder(this)
-            .setTitle(getString(R.string.whats_new_title, BuildConfig.VERSION_NAME))
-            .setMessage(whatsNew)
+            .setTitle(getString(R.string.welcome_title))
+            .setMessage(getString(R.string.welcome_message, BuildConfig.VERSION_NAME, updateLog))
             .setPositiveButton(android.R.string.ok, null)
             .show()
     }
