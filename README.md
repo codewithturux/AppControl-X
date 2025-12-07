@@ -40,7 +40,13 @@ A powerful Android application for controlling app behavior, battery optimizatio
 
 ## Screenshots
 
-*Coming soon*
+| Setup | Main | App Info | Batch | Activity Launcher |
+|:-----:|:----:|:--------:|:-----:|:-----------------:|
+| ![Setup 1](https://github.com/user-attachments/assets/b54ea7eb-d2cb-452e-8914-435f0126fd1c) | ![Main Apps](https://github.com/user-attachments/assets/2f45871b-f2b0-4b1b-aa01-433516caa608) | ![App Info](https://github.com/user-attachments/assets/1085fad6-011e-4ab6-9e48-a7a1310319da) | ![Batch](https://github.com/user-attachments/assets/88001520-721a-436a-9dfc-c372ebe03790) | ![Activity Launcher](https://github.com/user-attachments/assets/1e634bb6-4d75-4072-87f8-ead4d4eac504) |
+
+| Tools | Settings | About | Blocklist |
+|:-----:|:--------:|:-----:|:---------:|
+| ![Tools](https://github.com/user-attachments/assets/cc4cac8c-cc98-417c-b46c-c338aa017383) | ![Settings](https://github.com/user-attachments/assets/1bd61725-a9e1-40d3-8725-6b709cf0abdf) | ![About](https://github.com/user-attachments/assets/c5074985-cb74-4097-b051-6df73d5ce89e) | ![Blocklist](https://github.com/user-attachments/assets/71e4b960-6ce5-4805-8f44-e86d53eb675a) |
 
 ## Platform Support
 
