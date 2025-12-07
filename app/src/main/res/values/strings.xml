@@ -28,9 +28,15 @@
     <string name="setup_welcome">Welcome to AppControlX</string>
     <string name="setup_mode_title">Select Execution Mode</string>
     <string name="setup_mode_desc">Choose how AppControlX will control apps</string>
-    <string name="setup_permissions_title">Permissions</string>
+    <string name="setup_permissions_title">Setup</string>
+    <string name="setup_permissions_desc">Grant permissions and select execution mode</string>
+    <string name="setup_permissions_section">Permissions</string>
+    <string name="setup_mode_section">Execution Mode</string>
     <string name="setup_xiaomi_title">Xiaomi Setup</string>
     <string name="setup_complete_title">Setup Complete</string>
+    <string name="permission_notification">Notifications</string>
+    <string name="permission_query_apps">Query Installed Apps</string>
+    <string name="btn_continue">Continue</string>
     
     <!-- Disclaimer -->
     <string name="disclaimer_title">Important Warning</string>

@@ -26,8 +26,8 @@ class DisclaimerFragment : Fragment() {
         
         binding.btnAccept.setOnClickListener {
             if (binding.checkAgree.isChecked) {
-                // Go directly to main activity
-                (activity as? SetupActivity)?.completeSetup()
+                // Go to permissions page
+                (activity as? SetupActivity)?.nextStep()
             }
         }
     }

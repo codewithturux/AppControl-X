@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import com.appcontrolx.R
 import com.appcontrolx.databinding.FragmentSettingsBinding
@@ -18,6 +19,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.appcontrolx.executor.RootExecutor
 import com.appcontrolx.model.ExecutionMode
 import com.appcontrolx.rollback.RollbackManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 class SettingsFragment : Fragment() {
@@ -100,7 +104,6 @@ class SettingsFragment : Fragment() {
     private fun showModeSelectionDialog() {
         val permissionBridge = PermissionBridge(requireContext())
         
-        // Always show all modes - let user choose, validate on selection
         val modes = arrayOf(
             getString(R.string.mode_root),
             getString(R.string.mode_shizuku),
@@ -120,37 +123,65 @@ class SettingsFragment : Fragment() {
             .setSingleChoiceItems(modes, currentIndex) { dialog, which ->
                 val selectedMode = modeValues[which]
                 
-                // Validate selection
                 when (selectedMode) {
                     Constants.MODE_ROOT -> {
-                        if (!permissionBridge.checkRootNow()) {
-                            Toast.makeText(context, R.string.error_root_not_available, Toast.LENGTH_SHORT).show()
-                            return@setSingleChoiceItems
-                        }
+                        dialog.dismiss()
+                        checkAndSetRootMode(permissionBridge)
                     }
                     Constants.MODE_SHIZUKU -> {
                         if (!permissionBridge.isShizukuReady()) {
                             Toast.makeText(context, R.string.error_shizuku_not_available, Toast.LENGTH_SHORT).show()
                             return@setSingleChoiceItems
                         }
+                        applyModeAndRestart(selectedMode)
+                        dialog.dismiss()
+                    }
+                    else -> {
+                        applyModeAndRestart(selectedMode)
+                        dialog.dismiss()
                     }
                 }
-                
-                prefs.edit().putString(Constants.PREFS_EXECUTION_MODE, selectedMode).apply()
-                updateModeDisplay()
-                dialog.dismiss()
-                
-                // Show restart prompt
-                MaterialAlertDialogBuilder(requireContext())
-                    .setTitle(R.string.settings_mode_changed)
-                    .setMessage(R.string.settings_restart_required)
-                    .setPositiveButton(R.string.settings_restart_now) { _, _ ->
-                        restartApp()
-                    }
-                    .setNegativeButton(R.string.settings_restart_later, null)
-                    .show()
             }
             .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+    
+    private fun checkAndSetRootMode(permissionBridge: PermissionBridge) {
+        // Show checking dialog
+        val progressDialog = MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.mode_root)
+            .setMessage(R.string.btn_checking)
+            .setCancelable(false)
+            .create()
+        progressDialog.show()
+        
+        lifecycleScope.launch {
+            val hasRoot = withContext(Dispatchers.IO) {
+                permissionBridge.checkRootNow()
+            }
+            
+            progressDialog.dismiss()
+            
+            if (hasRoot) {
+                Toast.makeText(context, R.string.root_granted, Toast.LENGTH_SHORT).show()
+                applyModeAndRestart(Constants.MODE_ROOT)
+            } else {
+                Toast.makeText(context, R.string.error_root_not_available, Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+    
+    private fun applyModeAndRestart(mode: String) {
+        prefs.edit().putString(Constants.PREFS_EXECUTION_MODE, mode).apply()
+        updateModeDisplay()
+        
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.settings_mode_changed)
+            .setMessage(R.string.settings_restart_required)
+            .setPositiveButton(R.string.settings_restart_now) { _, _ ->
+                restartApp()
+            }
+            .setNegativeButton(R.string.settings_restart_later, null)
             .show()
     }
     

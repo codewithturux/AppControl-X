@@ -35,16 +35,22 @@ class SetupActivity : AppCompatActivity() {
     }
     
     private fun setupViewPager() {
-        // Simplified setup: just disclaimer
         val fragments = listOf<Fragment>(
-            DisclaimerFragment()
+            DisclaimerFragment(),
+            PermissionsFragment()
         )
         
         binding.viewPager.adapter = SetupPagerAdapter(this, fragments)
         binding.viewPager.isUserInputEnabled = false
         
-        // Hide dots for single page
-        binding.dotsIndicator.visibility = View.GONE
+        setupDotsIndicator(fragments.size)
+        binding.dotsIndicator.visibility = View.VISIBLE
+        
+        binding.viewPager.registerOnPageChangeCallback(object : androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                updateDotsIndicator(position)
+            }
+        })
     }
     
     private fun setupDotsIndicator(count: Int) {
