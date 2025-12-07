@@ -121,6 +121,7 @@ class ActionLogBottomSheet : BottomSheetDialogFragment() {
     private fun performRollback(log: ActionLog) {
         val b = binding ?: return
         val pm = policyManager ?: return
+        val rm = rollbackManager ?: return
         
         lifecycleScope.launch {
             b.progressBar.visibility = View.VISIBLE
@@ -140,12 +141,27 @@ class ActionLogBottomSheet : BottomSheetDialogFragment() {
                 }
                 
                 val failCount = results.count { it.second.isFailure }
+                val success = failCount == 0
                 
-                if (failCount == 0) {
+                // Log the rollback action
+                val rollbackActionName = "ROLLBACK_" + log.action
+                withContext(Dispatchers.IO) {
+                    rm.logAction(ActionLog(
+                        action = rollbackActionName,
+                        packages = log.packages,
+                        success = success,
+                        message = if (success) "Rolled back from ${log.action}" else "$failCount failed"
+                    ))
+                }
+                
+                if (success) {
                     Toast.makeText(context, R.string.log_rollback_success, Toast.LENGTH_SHORT).show()
                 } else {
                     Toast.makeText(context, getString(R.string.log_rollback_partial, failCount), Toast.LENGTH_SHORT).show()
                 }
+                
+                // Refresh the log list
+                loadLogs()
                 
             } catch (e: Exception) {
                 Toast.makeText(context, getString(R.string.log_rollback_failed, e.message), Toast.LENGTH_SHORT).show()
