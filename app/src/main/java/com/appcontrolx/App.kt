@@ -15,11 +15,12 @@ class App : Application() {
         private const val TAG = "AppControlX"
         
         init {
+            // Configure libsu
             Shell.enableVerboseLogging = BuildConfig.DEBUG
             Shell.setDefaultBuilder(
                 Shell.Builder.create()
-                    .setFlags(Shell.FLAG_MOUNT_MASTER)
-                    .setTimeout(10)
+                    .setFlags(Shell.FLAG_REDIRECT_STDERR)
+                    .setTimeout(30) // Increase timeout for slow devices
             )
         }
     }

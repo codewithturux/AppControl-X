@@ -58,11 +58,18 @@ class RootExecutor : CommandExecutor {
         }
         
         return try {
+            // Ensure shell is ready
+            val shell = Shell.getShell()
+            if (!shell.isRoot) {
+                return Result.failure(Exception("Root access not available"))
+            }
+            
             val result = Shell.cmd(command).exec()
             if (result.isSuccess) {
                 Result.success(result.out.joinToString("\n"))
             } else {
-                Result.failure(Exception(result.err.joinToString("\n")))
+                val error = result.err.joinToString("\n").ifEmpty { "Command failed" }
+                Result.failure(Exception(error))
             }
         } catch (e: Exception) {
             Result.failure(e)
