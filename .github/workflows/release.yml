@@ -32,17 +32,17 @@ jobs:
           -keyalg RSA \
           -keysize 2048 \
           -validity 10000 \
-          -storepass android \
-          -keypass android \
+          -storepass android-risuncode-appcontrolx \
+          -keypass android-risuncode-appcontrolx \
           -dname "CN=AppControlX, OU=Dev, O=RisunCode, L=ID, ST=ID, C=ID"
         
     - name: Build Release APK
       run: |
         ./gradlew assembleRelease \
           -Pandroid.injected.signing.store.file=$PWD/app/release.keystore \
-          -Pandroid.injected.signing.store.password=android \
+          -Pandroid.injected.signing.store.password=android-risuncode-appcontrolx \
           -Pandroid.injected.signing.key.alias=appcontrolx \
-          -Pandroid.injected.signing.key.password=android \
+          -Pandroid.injected.signing.key.password=android-risuncode-appcontrolx \
           --no-daemon
         
     - name: Get version name
