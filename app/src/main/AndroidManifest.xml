@@ -3,8 +3,6 @@
 
     <!-- Required Permissions -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     
     <!-- Shizuku -->
     <uses-permission android:name="moe.shizuku.manager.permission.API_V23" />
