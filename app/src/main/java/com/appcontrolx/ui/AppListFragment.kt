@@ -71,7 +71,7 @@ class AppListFragment : Fragment() {
     }
     
     private fun setupRecyclerView() {
-        adapter = AppListAdapter { app ->
+        adapter = AppListAdapter { _ ->
             updateFabVisibility()
         }
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
@@ -168,7 +168,6 @@ class AppListFragment : Fragment() {
             
             binding.progressBar.visibility = View.GONE
             
-            val successCount = results.count { it.second.isSuccess }
             val failCount = results.count { it.second.isFailure }
             
             // Log action
