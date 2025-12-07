@@ -1,5 +1,9 @@
 package com.appcontrolx.ui
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -31,7 +35,7 @@ import kotlinx.coroutines.withTimeout
 class AppListFragment : Fragment() {
     
     private var _binding: FragmentAppListBinding? = null
-    private val binding get() = _binding!!
+    private val binding get() = _binding
     
     private lateinit var adapter: AppListAdapter
     private lateinit var appFetcher: AppFetcher
@@ -42,14 +46,34 @@ class AppListFragment : Fragment() {
     private var showSystemApps = false
     private var executionMode: ExecutionMode = ExecutionMode.None
     
+    // App cache
+    private var cachedUserApps: List<AppInfo>? = null
+    private var cachedSystemApps: List<AppInfo>? = null
+    private var lastCacheTime = 0L
+    
+    // Package change receiver
+    private val packageReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.action) {
+                Intent.ACTION_PACKAGE_ADDED,
+                Intent.ACTION_PACKAGE_REMOVED,
+                Intent.ACTION_PACKAGE_CHANGED -> {
+                    clearCache()
+                    if (_binding != null) loadApps()
+                }
+            }
+        }
+    }
+
     companion object {
         private const val LOAD_TIMEOUT_MS = 30000L
         private const val ACTION_TIMEOUT_MS = 60000L
+        private const val CACHE_DURATION_MS = 5 * 60 * 1000L // 5 minutes
     }
     
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentAppListBinding.inflate(inflater, container, false)
-        return binding.root
+        return _binding!!.root
     }
     
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -58,10 +82,13 @@ class AppListFragment : Fragment() {
         setupExecutionMode()
         appFetcher = AppFetcher(requireContext())
         
+        setupHeader()
         setupRecyclerView()
+        setupSwipeRefresh()
         setupChips()
         setupSelectionBar()
         setupSelectAll()
+        registerPackageReceiver()
         loadApps()
     }
     
@@ -73,10 +100,20 @@ class AppListFragment : Fragment() {
             policyManager = BatteryPolicyManager(executor!!)
             rollbackManager = RollbackManager(requireContext(), executor!!)
         }
-        // TODO: Add Shizuku executor
+    }
+    
+    private fun setupHeader() {
+        val b = binding ?: return
+        val modeText = when (executionMode) {
+            is ExecutionMode.Root -> "ROOT"
+            is ExecutionMode.Shizuku -> "SHIZUKU"
+            else -> "VIEW ONLY"
+        }
+        b.tvModeIndicator.text = modeText
     }
     
     private fun setupRecyclerView() {
+        val b = binding ?: return
         adapter = AppListAdapter(
             onSelectionChanged = { selectedCount ->
                 updateSelectionUI(selectedCount)
@@ -85,51 +122,68 @@ class AppListFragment : Fragment() {
                 showAppDetail(app)
             }
         )
-        binding.recyclerView.layoutManager = LinearLayoutManager(context)
-        binding.recyclerView.adapter = adapter
-        binding.recyclerView.setHasFixedSize(true)
+        b.recyclerView.layoutManager = LinearLayoutManager(context)
+        b.recyclerView.adapter = adapter
+        b.recyclerView.setHasFixedSize(true)
+    }
+    
+    private fun setupSwipeRefresh() {
+        val b = binding ?: return
+        b.swipeRefresh.setOnRefreshListener {
+            clearCache()
+            loadApps()
+        }
+        b.swipeRefresh.setColorSchemeResources(
+            R.color.primary,
+            R.color.secondary,
+            R.color.tertiary
+        )
     }
     
     private fun showAppDetail(app: AppInfo) {
         val bottomSheet = AppDetailBottomSheet.newInstance(app)
         bottomSheet.onActionCompleted = {
+            clearCache()
             loadApps()
         }
         bottomSheet.show(childFragmentManager, AppDetailBottomSheet.TAG)
     }
     
     private fun setupChips() {
-        binding.chipUserApps.isChecked = true
+        val b = binding ?: return
+        b.chipUserApps.isChecked = true
         
-        binding.chipUserApps.setOnClickListener {
+        b.chipUserApps.setOnClickListener {
             showSystemApps = false
-            binding.chipUserApps.isChecked = true
-            binding.chipSystemApps.isChecked = false
+            b.chipUserApps.isChecked = true
+            b.chipSystemApps.isChecked = false
             adapter.deselectAll()
             loadApps()
         }
         
-        binding.chipSystemApps.setOnClickListener {
+        b.chipSystemApps.setOnClickListener {
             showSystemApps = true
-            binding.chipSystemApps.isChecked = true
-            binding.chipUserApps.isChecked = false
+            b.chipSystemApps.isChecked = true
+            b.chipUserApps.isChecked = false
             adapter.deselectAll()
             loadApps()
         }
     }
     
     private fun setupSelectionBar() {
-        binding.btnCloseSelection.setOnClickListener {
+        val b = binding ?: return
+        b.btnCloseSelection.setOnClickListener {
             adapter.deselectAll()
         }
         
-        binding.btnAction.setOnClickListener {
+        b.btnAction.setOnClickListener {
             showActionSheet()
         }
     }
     
     private fun setupSelectAll() {
-        binding.btnSelectAll.setOnClickListener {
+        val b = binding ?: return
+        b.btnSelectAll.setOnClickListener {
             if (adapter.isAllSelected()) {
                 adapter.deselectAll()
             } else {
@@ -138,27 +192,29 @@ class AppListFragment : Fragment() {
             updateSelectAllButton()
         }
     }
-    
+
     private fun updateSelectionUI(selectedCount: Int) {
+        val b = binding ?: return
+        
         if (selectedCount > 0) {
-            binding.selectionBar.visibility = View.VISIBLE
-            binding.tvSelectedCount.text = getString(R.string.selected_count, selectedCount)
+            b.selectionBar.visibility = View.VISIBLE
+            b.tvSelectedCount.text = getString(R.string.selected_count, selectedCount)
             
-            // Disable action button if no execution mode
-            binding.btnAction.isEnabled = executionMode !is ExecutionMode.None
+            b.btnAction.isEnabled = executionMode !is ExecutionMode.None
             if (executionMode is ExecutionMode.None) {
-                binding.btnAction.text = getString(R.string.mode_required)
+                b.btnAction.text = getString(R.string.mode_required)
             } else {
-                binding.btnAction.text = getString(R.string.action_execute)
+                b.btnAction.text = getString(R.string.action_execute)
             }
         } else {
-            binding.selectionBar.visibility = View.GONE
+            b.selectionBar.visibility = View.GONE
         }
         updateSelectAllButton()
     }
     
     private fun updateSelectAllButton() {
-        binding.btnSelectAll.text = if (adapter.isAllSelected()) {
+        val b = binding ?: return
+        b.btnSelectAll.text = if (adapter.isAllSelected()) {
             getString(R.string.btn_deselect_all)
         } else {
             getString(R.string.btn_select_all)
@@ -192,14 +248,12 @@ class AppListFragment : Fragment() {
     private fun handleAction(action: ActionBottomSheet.Action, apps: List<AppInfo>) {
         val packages = apps.map { it.packageName }
         
-        // Check for critical packages
         val validation = SafetyValidator.validate(packages)
         if (!validation.canProceed) {
             showBlockedWarning(validation.blocked)
             return
         }
         
-        // Filter out force-stop-only packages for non-force-stop actions
         val filteredPackages = if (action != ActionBottomSheet.Action.FORCE_STOP) {
             val forceStopOnly = packages.filter { SafetyValidator.isForceStopOnly(it) }
             if (forceStopOnly.isNotEmpty()) {
@@ -229,13 +283,14 @@ class AppListFragment : Fragment() {
             getString(R.string.warning_force_stop_only, packages.size), 
             Toast.LENGTH_LONG).show()
     }
-    
+
     private fun executeAction(action: ActionBottomSheet.Action, packages: List<String>) {
         val pm = policyManager ?: return
         val rm = rollbackManager
+        val b = binding ?: return
         
         lifecycleScope.launch {
-            binding.progressBar.visibility = View.VISIBLE
+            b.progressBar.visibility = View.VISIBLE
             
             try {
                 rm?.saveSnapshot(packages)
@@ -272,6 +327,7 @@ class AppListFragment : Fragment() {
                 }
                 
                 adapter.deselectAll()
+                clearCache()
                 loadApps()
                 
             } catch (e: TimeoutCancellationException) {
@@ -285,7 +341,7 @@ class AppListFragment : Fragment() {
                     e.message ?: getString(R.string.error_unknown)
                 )
             } finally {
-                binding.progressBar.visibility = View.GONE
+                binding?.progressBar?.visibility = View.GONE
             }
         }
     }
@@ -315,10 +371,30 @@ class AppListFragment : Fragment() {
             .show()
     }
     
+    private fun clearCache() {
+        cachedUserApps = null
+        cachedSystemApps = null
+        lastCacheTime = 0L
+    }
+    
+    private fun isCacheValid(): Boolean {
+        return System.currentTimeMillis() - lastCacheTime < CACHE_DURATION_MS
+    }
+
     private fun loadApps() {
-        binding.progressBar.visibility = View.VISIBLE
-        binding.emptyState.visibility = View.GONE
-        binding.recyclerView.visibility = View.VISIBLE
+        val b = binding ?: return
+        
+        // Check cache first
+        val cachedApps = if (showSystemApps) cachedSystemApps else cachedUserApps
+        if (cachedApps != null && isCacheValid()) {
+            displayApps(cachedApps)
+            b.swipeRefresh.isRefreshing = false
+            return
+        }
+        
+        b.progressBar.visibility = View.VISIBLE
+        b.emptyState.visibility = View.GONE
+        b.recyclerView.visibility = View.VISIBLE
         
         lifecycleScope.launch {
             try {
@@ -329,15 +405,15 @@ class AppListFragment : Fragment() {
                     }
                 }
                 
-                if (apps.isEmpty()) {
-                    showEmptyState(
-                        getString(R.string.empty_no_apps_title),
-                        getString(R.string.empty_no_apps_message)
-                    )
+                // Cache the results
+                if (showSystemApps) {
+                    cachedSystemApps = apps
                 } else {
-                    adapter.submitList(apps)
-                    binding.tvAppCount.text = getString(R.string.app_count, apps.size)
+                    cachedUserApps = apps
                 }
+                lastCacheTime = System.currentTimeMillis()
+                
+                displayApps(apps)
                 
             } catch (e: TimeoutCancellationException) {
                 showEmptyState(
@@ -352,22 +428,54 @@ class AppListFragment : Fragment() {
                     showRetry = true
                 )
             } finally {
-                binding.progressBar.visibility = View.GONE
+                binding?.progressBar?.visibility = View.GONE
+                binding?.swipeRefresh?.isRefreshing = false
             }
         }
     }
     
+    private fun displayApps(apps: List<AppInfo>) {
+        val b = binding ?: return
+        
+        if (apps.isEmpty()) {
+            showEmptyState(
+                getString(R.string.empty_no_apps_title),
+                getString(R.string.empty_no_apps_message)
+            )
+        } else {
+            adapter.submitList(apps)
+            b.tvAppCount.text = getString(R.string.app_count, apps.size)
+        }
+    }
+    
     private fun showEmptyState(title: String, message: String, showRetry: Boolean = false) {
-        binding.recyclerView.visibility = View.GONE
-        binding.emptyState.visibility = View.VISIBLE
-        binding.tvEmptyTitle.text = title
-        binding.tvEmptyMessage.text = message
-        binding.btnRetry.visibility = if (showRetry) View.VISIBLE else View.GONE
-        binding.btnRetry.setOnClickListener { loadApps() }
+        val b = binding ?: return
+        
+        b.recyclerView.visibility = View.GONE
+        b.emptyState.visibility = View.VISIBLE
+        b.tvEmptyTitle.text = title
+        b.tvEmptyMessage.text = message
+        b.btnRetry.visibility = if (showRetry) View.VISIBLE else View.GONE
+        b.btnRetry.setOnClickListener { loadApps() }
+    }
+    
+    private fun registerPackageReceiver() {
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addAction(Intent.ACTION_PACKAGE_CHANGED)
+            addDataScheme("package")
+        }
+        requireContext().registerReceiver(packageReceiver, filter)
     }
     
     override fun onDestroyView() {
         super.onDestroyView()
+        try {
+            requireContext().unregisterReceiver(packageReceiver)
+        } catch (e: Exception) {
+            // Receiver not registered
+        }
         _binding = null
     }
 }

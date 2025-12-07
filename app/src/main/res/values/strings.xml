@@ -136,6 +136,8 @@
     <string name="btn_select_all">Select All</string>
     <string name="btn_deselect_all">Deselect All</string>
     <string name="btn_retry">Retry</string>
+    <string name="btn_close">Close</string>
+    <string name="empty_icon_desc">Empty state icon</string>
     <string name="selected_count">%d selected</string>
     <string name="app_count">%d apps</string>
     <string name="action_execute">Execute</string>

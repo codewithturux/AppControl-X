@@ -2,6 +2,8 @@
 <resources>
     <color name="primary">#1976D2</color>
     <color name="primary_dark">#1565C0</color>
+    <color name="secondary">#26A69A</color>
+    <color name="tertiary">#7E57C2</color>
     <color name="accent">#FF5722</color>
     
     <color name="status_positive">#4CAF50</color>
