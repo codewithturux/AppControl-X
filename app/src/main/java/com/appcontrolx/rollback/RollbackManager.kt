@@ -10,22 +10,26 @@ import java.util.UUID
 
 class RollbackManager(
     private val context: Context,
-    private val executor: CommandExecutor
+    private val executor: CommandExecutor? = null
 ) {
     private val gson = Gson()
     private val snapshotDir = File(context.filesDir, "snapshots").apply { mkdirs() }
     private val snapshotFile = File(snapshotDir, "rollback_snapshot.json")
     private val historyFile = File(snapshotDir, "action_history.json")
     
+    // Secondary constructor for read-only access (no executor needed)
+    constructor(context: Context) : this(context, null)
+    
     companion object {
         private const val TAG = "RollbackManager"
     }
     
-    fun saveSnapshot(packages: List<String>): StateSnapshot {
+    fun saveSnapshot(packages: List<String>): StateSnapshot? {
+        val exec = executor ?: return null
         val states = packages.map { pkg ->
-            val bgStatus = executor.execute("appops get $pkg RUN_IN_BACKGROUND")
-            val wlStatus = executor.execute("appops get $pkg WAKE_LOCK")
-            val enabledStatus = executor.execute("pm list packages -e | grep $pkg")
+            val bgStatus = exec.execute("appops get $pkg RUN_IN_BACKGROUND")
+            val wlStatus = exec.execute("appops get $pkg WAKE_LOCK")
+            val enabledStatus = exec.execute("pm list packages -e | grep $pkg")
             
             AppState(
                 packageName = pkg,
@@ -56,6 +60,7 @@ class RollbackManager(
     }
     
     fun rollback(): Result<Unit> {
+        val exec = executor ?: return Result.failure(Exception("No executor available"))
         val snapshot = getLastSnapshot() 
             ?: return Result.failure(Exception("No snapshot found"))
         
@@ -69,7 +74,7 @@ class RollbackManager(
             }
         }
         
-        return executor.executeBatch(commands)
+        return exec.executeBatch(commands)
     }
     
     fun logAction(action: ActionLog) {

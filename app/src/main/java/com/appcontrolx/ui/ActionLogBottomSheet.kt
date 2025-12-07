@@ -54,6 +54,10 @@ class ActionLogBottomSheet : BottomSheetDialogFragment() {
     }
     
     private fun setupExecutor() {
+        // RollbackManager for reading logs - no executor needed
+        rollbackManager = RollbackManager(requireContext())
+        
+        // Executor only needed for rollback actions
         val mode = PermissionBridge(requireContext()).detectMode()
         val executor: com.appcontrolx.executor.CommandExecutor? = when (mode) {
             is ExecutionMode.Root -> RootExecutor()
@@ -63,6 +67,7 @@ class ActionLogBottomSheet : BottomSheetDialogFragment() {
         
         executor?.let {
             policyManager = BatteryPolicyManager(it)
+            // Create new RollbackManager with executor for rollback capability
             rollbackManager = RollbackManager(requireContext(), it)
         }
     }
@@ -86,14 +91,7 @@ class ActionLogBottomSheet : BottomSheetDialogFragment() {
     
     private fun loadLogs() {
         val b = binding ?: return
-        val rm = rollbackManager
-        
-        if (rm == null) {
-            b.emptyState.visibility = View.VISIBLE
-            b.recyclerView.visibility = View.GONE
-            b.tvEmptyMessage.text = getString(R.string.log_no_mode)
-            return
-        }
+        val rm = rollbackManager ?: RollbackManager(requireContext()) // Fallback for read-only
         
         lifecycleScope.launch {
             val logs = withContext(Dispatchers.IO) {
@@ -125,8 +123,13 @@ class ActionLogBottomSheet : BottomSheetDialogFragment() {
     
     private fun performRollback(log: ActionLog) {
         val b = binding ?: return
-        val pm = policyManager ?: return
-        val rm = rollbackManager ?: return
+        val pm = policyManager
+        val rm = rollbackManager
+        
+        if (pm == null || rm == null) {
+            Toast.makeText(context, R.string.log_no_mode, Toast.LENGTH_SHORT).show()
+            return
+        }
         
         lifecycleScope.launch {
             b.progressBar.visibility = View.VISIBLE
