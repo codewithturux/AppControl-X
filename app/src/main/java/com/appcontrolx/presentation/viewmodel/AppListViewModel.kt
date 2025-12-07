@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import timber.log.Timber
+import android.util.Log
 import javax.inject.Inject
 
 sealed class AppListUiState {
@@ -36,11 +36,11 @@ class AppListViewModel @Inject constructor(
                 result.fold(
                     onSuccess = { apps ->
                         _uiState.value = AppListUiState.Success(apps)
-                        Timber.d("Loaded ${apps.size} user apps")
+                        Log.d(TAG, "Loaded ${apps.size} user apps")
                     },
                     onFailure = { error ->
                         _uiState.value = AppListUiState.Error(error.message ?: "Unknown error")
-                        Timber.e(error, "Failed to load user apps")
+                        Log.e(TAG, "Failed to load user apps", error)
                     }
                 )
             }
@@ -54,11 +54,11 @@ class AppListViewModel @Inject constructor(
                 result.fold(
                     onSuccess = { apps ->
                         _uiState.value = AppListUiState.Success(apps)
-                        Timber.d("Loaded ${apps.size} system apps")
+                        Log.d(TAG, "Loaded ${apps.size} system apps")
                     },
                     onFailure = { error ->
                         _uiState.value = AppListUiState.Error(error.message ?: "Unknown error")
-                        Timber.e(error, "Failed to load system apps")
+                        Log.e(TAG, "Failed to load system apps", error)
                     }
                 )
             }
@@ -88,9 +88,9 @@ class AppListViewModel @Inject constructor(
             val result = repository.freezeApp(packageName)
             onComplete(result)
             if (result.isSuccess) {
-                Timber.d("App frozen: $packageName")
+                Log.d(TAG, "App frozen: $packageName")
             } else {
-                Timber.e("Failed to freeze app: $packageName")
+                Log.e(TAG, "Failed to freeze app: $packageName")
             }
         }
     }
@@ -100,10 +100,14 @@ class AppListViewModel @Inject constructor(
             val result = repository.unfreezeApp(packageName)
             onComplete(result)
             if (result.isSuccess) {
-                Timber.d("App unfrozen: $packageName")
+                Log.d(TAG, "App unfrozen: $packageName")
             } else {
-                Timber.e("Failed to unfreeze app: $packageName")
+                Log.e(TAG, "Failed to unfreeze app: $packageName")
             }
         }
+    }
+    
+    companion object {
+        private const val TAG = "AppListViewModel"
     }
 }

@@ -30,16 +30,11 @@ class ActivityListAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
         
         fun bind(item: ActivityItem) {
-            // App icon
-            if (item.appIcon != null) {
-                binding.ivAppIcon.setImageDrawable(item.appIcon)
-                binding.ivAppIcon.visibility = View.VISIBLE
-            } else {
-                binding.ivAppIcon.visibility = View.GONE
-            }
+            // Hide app icon for simple activity list (icon is in parent group)
+            binding.ivAppIcon.visibility = View.GONE
             
-            binding.tvAppName.text = item.appName
-            binding.tvActivityName.text = item.activityName.substringAfterLast(".")
+            binding.tvAppName.text = item.shortName
+            binding.tvActivityName.text = item.shortName
             binding.tvFullName.text = item.activityName
             
             // Show exported badge

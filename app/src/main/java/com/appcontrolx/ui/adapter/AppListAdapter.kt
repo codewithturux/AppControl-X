@@ -115,7 +115,7 @@ class AppListAdapter(
                 cardApp.setOnClickListener {
                     if (isSelectionMode) {
                         toggleSelection(app.packageName)
-                        notifyItemChanged(bindingAdapterPosition)
+                        notifyItemChanged(adapterPosition)
                     } else {
                         onInfoClick(app)
                     }
@@ -128,7 +128,7 @@ class AppListAdapter(
                         startSelection(app.packageName)
                     } else {
                         toggleSelection(app.packageName)
-                        notifyItemChanged(bindingAdapterPosition)
+                        notifyItemChanged(adapterPosition)
                     }
                     true
                 }

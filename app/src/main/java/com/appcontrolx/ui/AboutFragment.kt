@@ -13,11 +13,11 @@ import androidx.lifecycle.lifecycleScope
 import com.appcontrolx.R
 import com.appcontrolx.databinding.FragmentAboutBinding
 import com.appcontrolx.service.PermissionBridge
+import android.util.Log
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 @AndroidEntryPoint
 class AboutFragment : Fragment() {
@@ -48,7 +48,7 @@ class AboutFragment : Fragment() {
             b.tvVersion.text = getString(R.string.about_version_format, 
                 packageInfo.versionName, packageInfo.longVersionCode)
         } catch (e: Exception) {
-            Timber.e(e, "Failed to get package info")
+            Log.e(TAG, "Failed to get package info", e)
         }
         
         // Current mode
@@ -118,8 +118,12 @@ class AboutFragment : Fragment() {
         try {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
         } catch (e: Exception) {
-            Timber.e(e, "Failed to open URL: $url")
+            Log.e(TAG, "Failed to open URL: $url", e)
         }
+    }
+    
+    companion object {
+        private const val TAG = "AboutFragment"
     }
     
     private fun shareApp() {
