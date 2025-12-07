@@ -48,7 +48,3 @@ class BatteryPolicyManager(private val executor: CommandExecutor) {
         return executor.execute("pm uninstall -k --user 0 $packageName").map { }
     }
 }
-
-enum class BackgroundStatus {
-    RESTRICTED, ALLOWED, DEFAULT
-}
