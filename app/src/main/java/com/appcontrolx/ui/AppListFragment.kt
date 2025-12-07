@@ -49,10 +49,15 @@ class AppListFragment : Fragment() {
     private var showSystemApps = false
     private var executionMode: ExecutionMode = ExecutionMode.None
     private var currentSearchQuery: String = ""
+    private var currentStatusFilter: StatusFilter = StatusFilter.ALL
     
     // App cache - persists until package change detected
     private var cachedUserApps: List<AppInfo>? = null
     private var cachedSystemApps: List<AppInfo>? = null
+    
+    enum class StatusFilter {
+        ALL, RUNNING, STOPPED, FROZEN, RESTRICTED
+    }
     
     // Package change receiver
     private val packageReceiver = object : BroadcastReceiver() {
@@ -89,6 +94,7 @@ class AppListFragment : Fragment() {
         setupSwipeRefresh()
         setupSearch()
         setupChips()
+        setupStatusFilter()
         setupSelectionBar()
         setupSelectAll()
         registerPackageReceiver()
@@ -119,11 +125,21 @@ class AppListFragment : Fragment() {
         val cachedApps = if (showSystemApps) cachedSystemApps else cachedUserApps
         if (cachedApps == null) return
         
-        val filtered = if (currentSearchQuery.isBlank()) {
-            cachedApps
-        } else {
+        var filtered = cachedApps
+        
+        // Apply status filter
+        filtered = when (currentStatusFilter) {
+            StatusFilter.ALL -> filtered
+            StatusFilter.RUNNING -> filtered.filter { it.isRunning }
+            StatusFilter.STOPPED -> filtered.filter { it.isStopped }
+            StatusFilter.FROZEN -> filtered.filter { !it.isEnabled }
+            StatusFilter.RESTRICTED -> filtered.filter { it.isBackgroundRestricted }
+        }
+        
+        // Apply search filter
+        if (currentSearchQuery.isNotBlank()) {
             val query = currentSearchQuery.lowercase()
-            cachedApps.filter { app ->
+            filtered = filtered.filter { app ->
                 app.appName.lowercase().contains(query) ||
                 app.packageName.lowercase().contains(query)
             }
@@ -195,19 +211,50 @@ class AppListFragment : Fragment() {
         b.chipUserApps.isChecked = true
         
         b.chipUserApps.setOnClickListener {
-            showSystemApps = false
-            b.chipUserApps.isChecked = true
-            b.chipSystemApps.isChecked = false
-            adapter.deselectAll()
-            loadApps()
+            if (showSystemApps) {
+                showSystemApps = false
+                b.chipUserApps.isChecked = true
+                b.chipSystemApps.isChecked = false
+                adapter.deselectAll()
+                loadApps()
+            }
         }
         
         b.chipSystemApps.setOnClickListener {
-            showSystemApps = true
-            b.chipSystemApps.isChecked = true
-            b.chipUserApps.isChecked = false
-            adapter.deselectAll()
-            loadApps()
+            if (!showSystemApps) {
+                showSystemApps = true
+                b.chipSystemApps.isChecked = true
+                b.chipUserApps.isChecked = false
+                adapter.deselectAll()
+                loadApps()
+            }
+        }
+    }
+    
+    private fun setupStatusFilter() {
+        val b = binding ?: return
+        
+        b.chipStatusFilter.setOnClickListener {
+            val filterNames = arrayOf(
+                getString(R.string.filter_all),
+                getString(R.string.filter_running),
+                getString(R.string.filter_stopped),
+                getString(R.string.filter_frozen),
+                getString(R.string.filter_restricted)
+            )
+            val filters = StatusFilter.values()
+            val currentIndex = filters.indexOf(currentStatusFilter)
+            
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.filter_status_title)
+                .setSingleChoiceItems(filterNames, currentIndex) { dialog, which ->
+                    currentStatusFilter = filters[which]
+                    b.chipStatusFilter.text = filterNames[which]
+                    filterApps()
+                    dialog.dismiss()
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
         }
     }
     

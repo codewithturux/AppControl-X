@@ -296,6 +296,14 @@
     <string name="badge_restricted">BG RESTRICTED</string>
     <string name="badge_exported">EXPORTED</string>
     
+    <!-- Status Filter -->
+    <string name="filter_all">All</string>
+    <string name="filter_running">Running</string>
+    <string name="filter_stopped">Stopped</string>
+    <string name="filter_frozen">Frozen</string>
+    <string name="filter_restricted">Restricted</string>
+    <string name="filter_status_title">Filter by Status</string>
+    
     <!-- Errors -->
     <string name="error_root_not_available">Root access not available. Please grant root permission.</string>
     <string name="error_shizuku_not_available">Shizuku not available. Please start Shizuku app first.</string>

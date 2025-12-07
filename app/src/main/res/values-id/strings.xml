@@ -131,6 +131,14 @@
     <string name="badge_stopped">BERHENTI</string>
     <string name="badge_restricted">DIBATASI</string>
     
+    <!-- Status Filter -->
+    <string name="filter_all">Semua</string>
+    <string name="filter_running">Berjalan</string>
+    <string name="filter_stopped">Berhenti</string>
+    <string name="filter_frozen">Dibekukan</string>
+    <string name="filter_restricted">Dibatasi</string>
+    <string name="filter_status_title">Filter Status</string>
+    
     <!-- Log -->
     <string name="log_status_success">Berhasil</string>
     <string name="log_status_failed">Gagal</string>

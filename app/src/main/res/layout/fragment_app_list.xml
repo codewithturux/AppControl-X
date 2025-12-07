@@ -126,41 +126,53 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingHorizontal="20dp"
+            android:paddingHorizontal="16dp"
             android:paddingVertical="8dp"
             android:background="?attr/colorSurface">
 
-            <com.google.android.material.chip.ChipGroup
-                android:layout_width="0dp"
+            <!-- App Type Chips -->
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipUserApps"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                app:singleSelection="true"
-                app:singleLine="true"
-                app:chipSpacingHorizontal="8dp">
+                android:text="@string/chip_user_apps"
+                android:checkable="true"
+                style="@style/Widget.Material3.Chip.Filter" />
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipUserApps"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/chip_user_apps"
-                    android:checkable="true"
-                    style="@style/Widget.Material3.Chip.Filter" />
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipSystemApps"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="@string/chip_system_apps"
+                android:checkable="true"
+                style="@style/Widget.Material3.Chip.Filter" />
 
-                <com.google.android.material.chip.Chip
-                    android:id="@+id/chipSystemApps"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/chip_system_apps"
-                    android:checkable="true"
-                    style="@style/Widget.Material3.Chip.Filter" />
-            </com.google.android.material.chip.ChipGroup>
+            <!-- Status Filter Chip -->
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipStatusFilter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:text="@string/filter_all"
+                app:chipIcon="@drawable/ic_expand_more"
+                app:chipIconVisible="true"
+                app:closeIconVisible="false"
+                style="@style/Widget.Material3.Chip.Assist" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSelectAll"
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:text="@string/btn_select_all"
-                android:textSize="12sp"
+                android:textSize="11sp"
+                android:minWidth="0dp"
+                android:paddingHorizontal="8dp"
                 style="@style/Widget.Material3.Button.TextButton" />
         </LinearLayout>
 
