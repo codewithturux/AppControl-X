@@ -103,7 +103,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Data &amp; Launch"
+        android:text="Data"
         android:textColor="@color/on_surface_secondary"
         android:textSize="12sp"
         android:layout_marginTop="16dp"
@@ -132,13 +132,5 @@
             android:textColor="@color/warning_color"
             style="@style/Widget.Material3.Button.OutlinedButton" />
     </LinearLayout>
-
-    <Button
-        android:id="@+id/btnLaunchApps"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/action_launch_apps"
-        style="@style/Widget.Material3.Button.TonalButton" />
 
 </LinearLayout>
