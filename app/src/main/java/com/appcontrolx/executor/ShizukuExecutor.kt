@@ -1,46 +1,33 @@
 package com.appcontrolx.executor
 
-import android.content.ComponentName
-import android.content.Context
-import android.content.ServiceConnection
-import android.os.IBinder
-import com.appcontrolx.IShellService
 import rikka.shizuku.Shizuku
+import java.io.BufferedReader
+import java.io.DataOutputStream
 
-class ShizukuExecutor(private val context: Context) : CommandExecutor {
-    
-    private var shellService: IShellService? = null
-    
-    private val serviceConnection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            shellService = IShellService.Stub.asInterface(service)
-        }
-        override fun onServiceDisconnected(name: ComponentName?) {
-            shellService = null
-        }
-    }
-    
-    fun bindService() {
-        if (!Shizuku.pingBinder()) return
-        
-        // TODO: Implement UserService binding
-        // This requires AIDL setup
-    }
-    
-    fun unbindService() {
-        shellService = null
-    }
+class ShizukuExecutor : CommandExecutor {
     
     override fun execute(command: String): Result<String> {
-        val service = shellService 
-            ?: return Result.failure(Exception("Shizuku service not bound"))
+        if (!Shizuku.pingBinder()) {
+            return Result.failure(Exception("Shizuku not available"))
+        }
         
         return try {
-            val output = service.exec(command)
-            if (output.startsWith("ERROR:")) {
-                Result.failure(Exception(output))
+            // Use Shizuku's remote process to execute shell commands
+            val process = Shizuku.newProcess(arrayOf("sh", "-c", command), null, null)
+            
+            val output = process.inputStream.bufferedReader().use(BufferedReader::readText)
+            val error = process.errorStream.bufferedReader().use(BufferedReader::readText)
+            val exitCode = process.waitFor()
+            
+            if (exitCode == 0) {
+                Result.success(output.trim())
             } else {
-                Result.success(output)
+                val errorMsg = error.ifBlank { output }.trim()
+                if (errorMsg.isNotBlank()) {
+                    Result.failure(Exception(errorMsg))
+                } else {
+                    Result.failure(Exception("Command failed with exit code $exitCode"))
+                }
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -48,10 +35,20 @@ class ShizukuExecutor(private val context: Context) : CommandExecutor {
     }
     
     override fun executeBatch(commands: List<String>): Result<Unit> {
-        commands.forEach { cmd ->
+        for (cmd in commands) {
             val result = execute(cmd)
-            if (result.isFailure) return Result.failure(result.exceptionOrNull()!!)
+            // Continue even if some commands fail (best effort)
         }
         return Result.success(Unit)
+    }
+    
+    companion object {
+        fun isAvailable(): Boolean {
+            return try {
+                Shizuku.pingBinder()
+            } catch (e: Exception) {
+                false
+            }
+        }
     }
 }

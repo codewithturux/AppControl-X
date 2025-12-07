@@ -14,6 +14,7 @@ import com.appcontrolx.R
 import com.appcontrolx.databinding.BottomSheetAppDetailBinding
 import com.appcontrolx.executor.CommandExecutor
 import com.appcontrolx.executor.RootExecutor
+import com.appcontrolx.executor.ShizukuExecutor
 import com.appcontrolx.model.AppInfo
 import com.appcontrolx.model.ExecutionMode
 import com.appcontrolx.rollback.ActionLog
@@ -85,10 +86,20 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
     
     private fun setupExecutor() {
         executionMode = PermissionBridge(requireContext()).detectMode()
-        if (executionMode is ExecutionMode.Root) {
-            executor = RootExecutor()
-            policyManager = BatteryPolicyManager(executor!!)
-            rollbackManager = RollbackManager(requireContext(), executor!!)
+        when (executionMode) {
+            is ExecutionMode.Root -> {
+                executor = RootExecutor()
+                policyManager = BatteryPolicyManager(executor!!)
+                rollbackManager = RollbackManager(requireContext(), executor!!)
+            }
+            is ExecutionMode.Shizuku -> {
+                executor = ShizukuExecutor()
+                policyManager = BatteryPolicyManager(executor!!)
+                rollbackManager = RollbackManager(requireContext(), executor!!)
+            }
+            else -> {
+                // View only mode
+            }
         }
     }
     
