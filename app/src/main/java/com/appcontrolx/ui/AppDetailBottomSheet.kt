@@ -258,14 +258,14 @@ class AppDetailBottomSheet : BottomSheetDialogFragment() {
         binding.btnClearCache.setOnClickListener {
             if (isCritical) { showProtectedWarning(); return@setOnClickListener }
             executeActionWithLoading(getString(R.string.action_clear_cache)) {
-                executor?.execute("pm clear --cache-only ${appInfo!!.packageName}")
+                executor?.execute("pm clear --cache-only ${appInfo!!.packageName}")?.map { }
             }
         }
         
         binding.btnClearData.setOnClickListener {
             if (isCritical) { showProtectedWarning(); return@setOnClickListener }
             executeActionWithLoading(getString(R.string.action_clear_data)) {
-                executor?.execute("pm clear ${appInfo!!.packageName}")
+                executor?.execute("pm clear ${appInfo!!.packageName}")?.map { }
             }
         }
         

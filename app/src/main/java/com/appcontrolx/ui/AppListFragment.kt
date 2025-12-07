@@ -327,8 +327,8 @@ class AppListFragment : Fragment() {
                                 ActionBottomSheet.Action.FORCE_STOP -> pm.forceStop(pkg)
                                 ActionBottomSheet.Action.RESTRICT_BACKGROUND -> pm.restrictBackground(pkg)
                                 ActionBottomSheet.Action.ALLOW_BACKGROUND -> pm.allowBackground(pkg)
-                                ActionBottomSheet.Action.CLEAR_CACHE -> executor?.execute("pm clear --cache-only $pkg") ?: Result.failure(Exception("No executor"))
-                                ActionBottomSheet.Action.CLEAR_DATA -> executor?.execute("pm clear $pkg") ?: Result.failure(Exception("No executor"))
+                                ActionBottomSheet.Action.CLEAR_CACHE -> executor?.execute("pm clear --cache-only $pkg")?.map { } ?: Result.failure(Exception("No executor"))
+                                ActionBottomSheet.Action.CLEAR_DATA -> executor?.execute("pm clear $pkg")?.map { } ?: Result.failure(Exception("No executor"))
                             }
                         }
                         
