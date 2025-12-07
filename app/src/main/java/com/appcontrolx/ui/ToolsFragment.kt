@@ -42,15 +42,20 @@ class ToolsFragment : Fragment() {
         // QColor / Display Color Settings
         binding.itemQColor.setOnClickListener {
             val intents = listOf(
+                // Qualcomm QColor (Snapdragon)
+                "com.qualcomm.qti.qcolor" to "com.qualcomm.qti.qcolor.QcolorActivity",
+                // MediaTek MiraVision
+                "com.mediatek.miravision.ui" to "com.mediatek.miravision.ui.MiraVisionActivity",
+                "com.mediatek.pq" to "com.mediatek.pq.PictureQualityActivity",
                 // Xiaomi QColor
                 "com.android.settings" to "com.android.settings.QColorActivity",
                 "com.android.settings" to "com.android.settings.Settings\$QColorSettingsActivity",
                 // AOSP Display Color
                 "com.android.settings" to "com.android.settings.display.ColorModePreferenceFragment",
                 "com.android.settings" to "com.android.settings.Settings\$ColorModeSettingsActivity",
-                // Samsung
+                // Samsung Screen Mode
                 "com.samsung.android.lool" to "com.samsung.android.sm.ui.battery.ScreenModeActivity",
-                // OPPO/Realme
+                // OPPO/Realme ColorOS
                 "com.coloros.screencolor" to "com.coloros.screencolor.ScreenColorActivity"
             )
             tryOpenSettings(intents)

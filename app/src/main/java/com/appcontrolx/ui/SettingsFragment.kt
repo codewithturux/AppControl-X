@@ -238,15 +238,10 @@ class SettingsFragment : Fragment() {
     }
     
     private fun updateLogCount() {
-        val mode = PermissionBridge(requireContext()).detectMode()
-        if (mode is ExecutionMode.Root) {
-            val executor = RootExecutor()
-            val rm = RollbackManager(requireContext(), executor)
-            val count = rm.getLogCount()
-            binding.tvLogCount.text = getString(R.string.settings_log_count, count)
-        } else {
-            binding.tvLogCount.text = getString(R.string.log_no_mode)
-        }
+        // RollbackManager can read logs without executor now
+        val rm = RollbackManager(requireContext())
+        val count = rm.getLogCount()
+        binding.tvLogCount.text = getString(R.string.settings_log_count, count)
     }
     
     private fun setupDataSettings() {
