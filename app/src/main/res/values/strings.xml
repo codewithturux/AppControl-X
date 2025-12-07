@@ -266,6 +266,7 @@
     <string name="copied_to_clipboard">Copied to clipboard</string>
     <string name="tools_extra_dim">Extra Dim</string>
     <string name="tools_extra_dim_desc">Reduce screen brightness below minimum</string>
+    <string name="tools_qcolor">QColor / Display Color</string>
     <string name="tools_notification_log">Notification Log</string>
     <string name="tools_notification_history">Notification History</string>
     <string name="tools_battery_optimization">Battery Optimization</string>

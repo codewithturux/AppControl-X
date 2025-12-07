@@ -33,10 +33,25 @@ class ToolsFragment : Fragment() {
         // Display Settings - Extra Dim (Android 12+)
         binding.itemExtraDim.setOnClickListener {
             val intents = listOf(
-                // Android 12+ Extra Dim
                 "com.android.settings" to "com.android.settings.display.ReduceBrightColorsPreferenceFragment",
-                // Alternative
                 "com.android.settings" to "com.android.settings.Settings\$ReduceBrightColorsSettingsActivity"
+            )
+            tryOpenSettings(intents)
+        }
+        
+        // QColor / Display Color Settings
+        binding.itemQColor.setOnClickListener {
+            val intents = listOf(
+                // Xiaomi QColor
+                "com.android.settings" to "com.android.settings.QColorActivity",
+                "com.android.settings" to "com.android.settings.Settings\$QColorSettingsActivity",
+                // AOSP Display Color
+                "com.android.settings" to "com.android.settings.display.ColorModePreferenceFragment",
+                "com.android.settings" to "com.android.settings.Settings\$ColorModeSettingsActivity",
+                // Samsung
+                "com.samsung.android.lool" to "com.samsung.android.sm.ui.battery.ScreenModeActivity",
+                // OPPO/Realme
+                "com.coloros.screencolor" to "com.coloros.screencolor.ScreenColorActivity"
             )
             tryOpenSettings(intents)
         }
