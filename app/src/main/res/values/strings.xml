@@ -64,6 +64,7 @@
     <string name="action_uninstall">Uninstall</string>
     <string name="action_restrict_bg">Restrict Background</string>
     <string name="action_allow_bg">Allow Background</string>
+    <string name="hint_run_any_bg">This value may reset itself, this is normal.</string>
     
     <!-- Navigation -->
     <string name="nav_apps">Apps</string>
