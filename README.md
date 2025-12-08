@@ -69,6 +69,12 @@ SafetyValidator blocks critical system packages from being disabled/frozen to pr
   - **Root access** (Magisk recommended)
   - **Shizuku** installed and activated (full features, no root needed)
 
+### Features Without Root
+These features work without Root or Shizuku:
+- **Tools** - All hidden settings shortcuts (Extra Dim, QColor, Notification Log, etc.)
+- **Activity Launcher** - Browse and launch any app's activities
+- **Autostart Manager** - Quick access to OEM autostart settings
+
 ## Installation
 
 ### From Release

@@ -2,6 +2,21 @@
 
 All notable changes to AppControlX.
 
+## [1.0.1] - 2024-12
+
+### Fixed
+- App info sheet stacking bug when returning from recent apps
+- Duplicate Activity Launcher in Tools layout (removed from Advanced section)
+- ProGuard rules for Rollback/ActionLog Gson serialization in release builds
+- Removed setupwizard from SafetyValidator restrictions
+
+### Changed
+- Autostart Manager now supports 13 OEM brands (Xiaomi, OPPO, Vivo, Huawei, OnePlus, Samsung, ASUS, Sony, Lenovo, ZTE, Meizu, Transsion)
+- Activity Launcher moved to Apps section
+- Added RUN_ANY_IN_BACKGROUND hint in app detail sheet
+
+---
+
 ## [1.0.0] - 2024-12
 
 ### Added

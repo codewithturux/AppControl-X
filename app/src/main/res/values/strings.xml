@@ -264,6 +264,8 @@
     <string name="tools_section_apps">Apps</string>
     <string name="tools_unknown_sources">Manage Unknown Sources</string>
     <string name="tools_manage_apps">Manage Apps (AOSP)</string>
+    <string name="tools_autostart_manager">Autostart Manager</string>
+    <string name="tools_autostart_manager_desc">Manage app autostart permissions (OEM)</string>
     <string name="copied_to_clipboard">Copied to clipboard</string>
     <string name="tools_extra_dim">Extra Dim</string>
     <string name="tools_extra_dim_desc">Reduce screen brightness below minimum</string>

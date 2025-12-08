@@ -49,6 +49,56 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
+                <!-- Activity Launcher -->
+                <LinearLayout
+                    android:id="@+id/itemActivityLauncher"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="14dp"
+                    android:background="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_launch"
+                        app:tint="?attr/colorPrimary" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="14dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/tools_activity_launcher"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/tools_activity_launcher_desc"
+                            android:textColor="@color/on_surface_secondary"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_chevron_right"
+                        android:alpha="0.4" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="52dp"
+                    android:background="@color/outline" />
+
                 <!-- Manage Apps -->
                 <LinearLayout
                     android:id="@+id/itemManageApps"
@@ -72,6 +122,56 @@
                         android:layout_marginStart="14dp"
                         android:text="@string/tools_manage_apps"
                         android:textSize="15sp" />
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:src="@drawable/ic_chevron_right"
+                        android:alpha="0.4" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="52dp"
+                    android:background="@color/outline" />
+
+                <!-- Autostart Manager -->
+                <LinearLayout
+                    android:id="@+id/itemAutostartManager"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="14dp"
+                    android:background="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:src="@drawable/ic_speed"
+                        app:tint="?attr/colorPrimary" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="14dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/tools_autostart_manager"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/tools_autostart_manager_desc"
+                            android:textColor="@color/on_surface_secondary"
+                            android:textSize="12sp" />
+                    </LinearLayout>
 
                     <ImageView
                         android:layout_width="18dp"
@@ -488,68 +588,6 @@
                         android:src="@drawable/ic_chevron_right"
                         android:alpha="0.4" />
                 </LinearLayout>
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Advanced Section -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/tools_section_advanced"
-            android:textColor="?attr/colorPrimary"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cardElevation="0dp"
-            app:strokeWidth="1dp"
-            app:strokeColor="@color/outline">
-
-            <!-- Activity Launcher -->
-            <LinearLayout
-                android:id="@+id/itemActivityLauncher"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="14dp"
-                android:background="?attr/selectableItemBackground">
-
-                <ImageView
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:src="@drawable/ic_launch"
-                    app:tint="?attr/colorPrimary" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="14dp"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/tools_activity_launcher"
-                        android:textSize="15sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/tools_activity_launcher_desc"
-                        android:textColor="@color/on_surface_secondary"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-                <ImageView
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
-                    android:src="@drawable/ic_chevron_right"
-                    android:alpha="0.4" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

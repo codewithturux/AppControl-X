@@ -140,6 +140,38 @@ class ToolsFragment : Fragment() {
             )
             tryOpenSettings(intents)
         }
+        
+        // Autostart Manager (multi-brand)
+        binding.itemAutostartManager.setOnClickListener {
+            val intents = listOf(
+                // Xiaomi/MIUI/HyperOS
+                "com.miui.securitycenter" to "com.miui.permcenter.autostart.AutoStartManagementActivity",
+                // OPPO/Realme (ColorOS)
+                "com.coloros.safecenter" to "com.coloros.privacypermissionsentry.PermissionTopActivity",
+                "com.oplus.safecenter" to "com.oplus.safecenter.permission.startup.StartupAppListActivity",
+                // Vivo (Funtouch/OriginOS)
+                "com.vivo.permissionmanager" to "com.vivo.permissionmanager.activity.BgStartUpManagerActivity",
+                // Huawei/Honor (EMUI/MagicUI)
+                "com.huawei.systemmanager" to "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity",
+                // OnePlus (OxygenOS)
+                "com.oneplus.security" to "com.oneplus.security.chainlaunch.view.ChainLaunchAppListActivity",
+                // Samsung (OneUI)
+                "com.samsung.android.lool" to "com.samsung.android.sm.ui.battery.BatteryActivity",
+                // ASUS (ZenUI)
+                "com.asus.mobilemanager" to "com.asus.mobilemanager.autostart.AutoStartActivity",
+                // Sony Xperia
+                "com.sonymobile.cta" to "com.sonymobile.cta.SomcCTAMainActivity",
+                // Lenovo/Motorola
+                "com.lenovo.security" to "com.lenovo.security.purebackground.PureBackgroundActivity",
+                // ZTE
+                "com.zte.heartyservice" to "com.zte.heartyservice.autorun.AppAutoRunManager",
+                // Meizu (Flyme)
+                "com.meizu.safe" to "com.meizu.safe.permission.SmartBGActivity",
+                // Tecno/Infinix/itel (Transsion)
+                "com.transsion.phonemanager" to "com.transsion.phonemanager.permission.PermissionActivity"
+            )
+            tryOpenSettings(intents)
+        }
     }
     
     private fun tryOpenSettings(intents: List<Pair<String, String>>) {
