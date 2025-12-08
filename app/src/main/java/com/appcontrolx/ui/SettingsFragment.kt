@@ -131,12 +131,8 @@ class SettingsFragment : Fragment() {
                         checkAndSetRootMode(permissionBridge)
                     }
                     Constants.MODE_SHIZUKU -> {
-                        if (!permissionBridge.isShizukuReady()) {
-                            Toast.makeText(context, R.string.error_shizuku_not_available, Toast.LENGTH_SHORT).show()
-                            return@setSingleChoiceItems
-                        }
-                        applyModeAndRestart(selectedMode)
                         dialog.dismiss()
+                        checkAndSetShizukuMode(permissionBridge)
                     }
                     else -> {
                         applyModeAndRestart(selectedMode)
@@ -146,6 +142,32 @@ class SettingsFragment : Fragment() {
             }
             .setNegativeButton(android.R.string.cancel, null)
             .show()
+    }
+    
+    private fun checkAndSetShizukuMode(permissionBridge: PermissionBridge) {
+        if (!permissionBridge.isShizukuAvailable()) {
+            Toast.makeText(context, R.string.error_shizuku_not_available, Toast.LENGTH_LONG).show()
+            return
+        }
+        
+        if (permissionBridge.isShizukuPermissionGranted()) {
+            applyModeAndRestart(Constants.MODE_SHIZUKU)
+            return
+        }
+        
+        // Request permission
+        val listener = object : rikka.shizuku.Shizuku.OnRequestPermissionResultListener {
+            override fun onRequestPermissionResult(requestCode: Int, grantResult: Int) {
+                rikka.shizuku.Shizuku.removeRequestPermissionResultListener(this)
+                if (grantResult == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    applyModeAndRestart(Constants.MODE_SHIZUKU)
+                } else {
+                    Toast.makeText(context, R.string.error_shizuku_not_available, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        rikka.shizuku.Shizuku.addRequestPermissionResultListener(listener)
+        rikka.shizuku.Shizuku.requestPermission(0)
     }
     
     private fun checkAndSetRootMode(permissionBridge: PermissionBridge) {
