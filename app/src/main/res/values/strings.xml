@@ -2,6 +2,37 @@
 <resources>
     <string name="app_name">AppControlX</string>
     
+    <!-- Dashboard -->
+    <string name="dashboard_cpu">CPU</string>
+    <string name="dashboard_battery">Battery</string>
+    <string name="dashboard_network">Network</string>
+    <string name="dashboard_ram">RAM</string>
+    <string name="dashboard_storage">Storage</string>
+    <string name="dashboard_display">Display</string>
+    <string name="dashboard_gpu">GPU</string>
+    <string name="dashboard_apps">Apps</string>
+    <string name="dashboard_features">Features</string>
+    <string name="dashboard_device_info">Device Info</string>
+    <string name="dashboard_device">Device</string>
+    <string name="dashboard_android">Android</string>
+    <string name="dashboard_uptime">Uptime</string>
+    <string name="dashboard_deep_sleep">Deep Sleep</string>
+    <string name="dashboard_kernel">Kernel</string>
+    <string name="dashboard_build">Build</string>
+    <string name="dashboard_feature_apps">App Manager</string>
+    <string name="dashboard_feature_battery">Battery</string>
+    <string name="dashboard_feature_activity">Activity</string>
+    <string name="dashboard_feature_tools">Tools</string>
+    <string name="dashboard_feature_logs">Logs</string>
+    <string name="dashboard_cpu_cores">%d cores</string>
+    <string name="dashboard_apps_count">%1$d user • %2$d system</string>
+    <string name="dashboard_network_disconnected">Disconnected</string>
+    <string name="dashboard_gpu_unavailable">N/A</string>
+    <string name="dashboard_temp_format">%.0f°C</string>
+    <string name="dashboard_percent_format">%d%%</string>
+    <string name="dashboard_hz_format">%.0f Hz</string>
+    <string name="dashboard_charging">Charging</string>
+    
     <!-- Status strings -->
     <string name="status_available">Available</string>
     <string name="status_not_available">Not available</string>
@@ -26,14 +57,21 @@
     
     <!-- Setup -->
     <string name="setup_welcome">Welcome to AppControlX</string>
+    <string name="setup_welcome_desc">Control your apps with ease using Root or Shizuku. Freeze, restrict background, and manage apps to save battery and improve performance.</string>
+    <string name="setup_features_title">Features</string>
+    <string name="setup_get_started">Get Started</string>
     <string name="setup_mode_title">Select Execution Mode</string>
     <string name="setup_mode_desc">Choose how AppControlX will control apps</string>
     <string name="setup_permissions_title">Setup</string>
     <string name="setup_permissions_desc">Grant permissions and select execution mode</string>
     <string name="setup_permissions_section">Permissions</string>
     <string name="setup_mode_section">Execution Mode</string>
-
-    <string name="setup_complete_title">Setup Complete</string>
+    <string name="setup_complete_title">Setup Complete!</string>
+    <string name="setup_complete_desc">You\'re all set to use AppControlX. Start managing your apps now.</string>
+    <string name="setup_status_mode">Mode</string>
+    <string name="setup_status_label">Status</string>
+    <string name="setup_status_ready">Ready</string>
+    <string name="setup_go_dashboard">Go to Dashboard</string>
     <string name="permission_notification">Notifications</string>
     <string name="permission_query_apps">Query Installed Apps</string>
     <string name="btn_continue">Continue</string>
@@ -67,6 +105,7 @@
     <string name="hint_run_any_bg">This value may reset itself, this is normal.</string>
     
     <!-- Navigation -->
+    <string name="nav_dashboard">Dashboard</string>
     <string name="nav_apps">Apps</string>
     <string name="nav_settings">Settings</string>
     <string name="nav_about">About</string>
@@ -97,6 +136,17 @@
     <string name="confirm_no">No</string>
     
     <!-- Settings -->
+    <string name="settings_display">Display</string>
+    <string name="settings_min_refresh_rate">Minimum Refresh Rate</string>
+    <string name="settings_max_refresh_rate">Maximum Refresh Rate</string>
+    <string name="settings_reset_refresh_rate">Reset Refresh Rate</string>
+    <string name="settings_reset_refresh_rate_desc">Restore default refresh rate settings</string>
+    <string name="settings_refresh_rate_format">%.0f Hz</string>
+    <string name="settings_select_refresh_rate">Select Refresh Rate</string>
+    <string name="settings_refresh_rate_reset">Refresh rate reset to default</string>
+    <string name="settings_refresh_rate_error">Failed to set refresh rate</string>
+    <string name="settings_about">About</string>
+    <string name="settings_version_format">Version %s</string>
     <string name="settings_execution">Execution</string>
     <string name="settings_current_mode">Current Mode</string>
     <string name="settings_change">Change</string>
@@ -157,6 +207,9 @@
     <string name="settings_appearance">Appearance</string>
     <string name="settings_theme">Theme</string>
     <string name="settings_theme_desc">Choose app theme</string>
+    <string name="settings_dynamic_colors">Dynamic Colors</string>
+    <string name="settings_dynamic_colors_desc">Use colors from your wallpaper (Android 12+)</string>
+    <string name="settings_dynamic_colors_restart">Restart app to apply changes</string>
     <string name="theme_system">System Default</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
@@ -299,6 +352,31 @@
     <string name="a11y_app_running">App is running</string>
     <string name="a11y_app_stopped">App is stopped</string>
     <string name="a11y_bg_restricted">Background restricted</string>
+    <string name="a11y_open_settings">Open settings</string>
+    <string name="a11y_close_selection">Close selection mode</string>
+    <string name="a11y_expand_more">Expand for more options</string>
+    <string name="a11y_navigate_next">Navigate to next</string>
+    <string name="a11y_mode_root">Root mode icon</string>
+    <string name="a11y_mode_shizuku">Shizuku mode icon</string>
+    <string name="a11y_mode_view_only">View only mode icon</string>
+    <string name="a11y_mode_selected">Mode selected</string>
+    <string name="a11y_github_link">Open GitHub repository</string>
+    <string name="a11y_star_project">Star project on GitHub</string>
+    <string name="a11y_report_bug">Report a bug</string>
+    <string name="a11y_share_app">Share app</string>
+    <string name="a11y_cpu_icon">CPU information</string>
+    <string name="a11y_battery_icon">Battery information</string>
+    <string name="a11y_network_icon">Network information</string>
+    <string name="a11y_ram_icon">RAM information</string>
+    <string name="a11y_storage_icon">Storage information</string>
+    <string name="a11y_display_icon">Display information</string>
+    <string name="a11y_gpu_icon">GPU information</string>
+    <string name="a11y_apps_icon">Apps information</string>
+    <string name="a11y_device_icon">Device information</string>
+    <string name="a11y_action_success">Action completed successfully</string>
+    <string name="a11y_action_failed">Action failed</string>
+    <string name="a11y_app_item">%1$s, %2$s</string>
+    <string name="a11y_app_item_with_status">%1$s, %2$s, %3$s</string>
     <string name="tools_not_available">This setting is not available on your device</string>
     <string name="tools_navigate_manually">Please navigate manually in Settings</string>
     
@@ -316,6 +394,17 @@
     <string name="filter_frozen">Frozen</string>
     <string name="filter_restricted">Restricted</string>
     <string name="filter_status_title">Filter by Status</string>
+    
+    <!-- Mode Loss Dialog -->
+    <string name="mode_loss_title_root">Root Access Lost</string>
+    <string name="mode_loss_title_shizuku">Shizuku Access Lost</string>
+    <string name="mode_loss_message_root">Root access is no longer available. This may happen if Magisk was updated or su was denied.</string>
+    <string name="mode_loss_message_shizuku_stopped">Shizuku service is not running. Please start Shizuku app.</string>
+    <string name="mode_loss_message_shizuku_permission">Shizuku permission was revoked. Please grant permission again.</string>
+    <string name="mode_loss_message_generic">%s is no longer available.</string>
+    <string name="mode_loss_btn_retry">Retry</string>
+    <string name="mode_loss_btn_switch">Switch Mode</string>
+    <string name="mode_loss_btn_view_only">Continue in View-Only</string>
     
     <!-- Errors -->
     <string name="error_root_not_available">Root access not available. Please grant root permission.</string>

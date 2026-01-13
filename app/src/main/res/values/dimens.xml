@@ -2,4 +2,34 @@
 <resources>
     <dimen name="stroke_normal">1dp</dimen>
     <dimen name="stroke_selected">2dp</dimen>
+    
+    <!-- Setup wizard dots -->
+    <dimen name="dot_size">10dp</dimen>
+    <dimen name="dot_margin">6dp</dimen>
+    
+    <!-- Dashboard cards -->
+    <dimen name="card_elevation">2dp</dimen>
+    <dimen name="card_elevation_small">1dp</dimen>
+    <dimen name="card_corner_radius">12dp</dimen>
+    <dimen name="card_corner_radius_large">16dp</dimen>
+    <dimen name="card_padding">12dp</dimen>
+    <dimen name="card_padding_large">16dp</dimen>
+    <dimen name="card_margin">4dp</dimen>
+    <dimen name="card_stroke_width">1dp</dimen>
+    <dimen name="card_icon_size">20dp</dimen>
+    <dimen name="card_icon_size_large">24dp</dimen>
+    <dimen name="card_icon_size_feature">32dp</dimen>
+    
+    <!-- Buttons -->
+    <dimen name="button_corner_radius">24dp</dimen>
+    
+    <!-- Spacing -->
+    <dimen name="spacing_xs">4dp</dimen>
+    <dimen name="spacing_sm">8dp</dimen>
+    <dimen name="spacing_md">12dp</dimen>
+    <dimen name="spacing_lg">16dp</dimen>
+    <dimen name="spacing_xl">24dp</dimen>
+    
+    <!-- Bottom sheet -->
+    <dimen name="bottom_sheet_corner_radius">28dp</dimen>
 </resources>

@@ -2,7 +2,47 @@
 
 All notable changes to AppControlX.
 
-## [1.1.0] - 2024-12
+## [2.0.0] - 2026-01 (v2 Rewrite)
+
+### 🎉 Complete Rewrite
+This is a complete rewrite of AppControlX with modern architecture and new features.
+
+### Added
+- **Dashboard** - System monitoring with real-time updates
+  - CPU usage and temperature
+  - Battery status and temperature
+  - RAM and Storage usage
+  - Network status
+  - Display info (resolution, refresh rate)
+  - GPU info (requires root)
+  - Device info with uptime and deep sleep time
+- **Setup Wizard** - Guided first-time setup with mode selection
+- **Mode Loss Detection** - Automatic detection when Root/Shizuku access is lost
+- **Display Refresh Rate Control** - Set min/max refresh rate (Root/Shizuku)
+- **Feature Quick Access Cards** - Navigate to features from Dashboard
+- **Batch Progress UI** - Visual progress during batch operations
+
+### Changed
+- **Architecture** - Complete rewrite with clean MVVM + Hilt DI
+- **Package Structure** - New organized structure:
+  - `domain/executor/` - Command executors
+  - `domain/manager/` - Business logic managers
+  - `domain/scanner/` - App scanning
+  - `domain/monitor/` - System monitoring
+  - `domain/validator/` - Safety validation
+  - `data/model/` - Data classes
+  - `ui/` - UI components
+- **App Detection** - More accurate using dumpsys + PackageManager
+- **Material 3** - Updated to latest Material Design 3
+- **Navigation** - Bottom navigation with Dashboard, Apps, Settings
+
+### Removed
+- Old code moved to `.old` folder (now deleted)
+- Legacy architecture patterns
+
+---
+
+## [1.1.0] - 2025-12
 
 ### Added
 - Showcase website (index.html) with responsive design, 3 themes, image gallery with lightbox
@@ -23,7 +63,7 @@ All notable changes to AppControlX.
 
 ---
 
-## [1.0.0] - 2024-12
+## [1.0.0] - 2025-12
 
 ### Added
 
@@ -131,18 +171,46 @@ All notable changes to AppControlX.
 
 ---
 
-## Architecture
+## Architecture (v2)
 
 ```
 com.appcontrolx/
-├── data/local/         # Room Database (DAO, Entity)
-├── di/                 # Hilt modules
-├── executor/           # RootExecutor, ShizukuExecutor
-├── model/              # AppInfo, ExecutionMode
-├── rollback/           # RollbackManager, ActionLog
-├── service/            # AppFetcher, BatteryPolicyManager, PermissionBridge
-├── ui/                 # Activities, Fragments, Adapters, BottomSheets
-└── utils/              # Constants, SafetyValidator
+├── App.kt                    # Application class with @HiltAndroidApp
+├── di/                       # Hilt DI modules
+│   ├── AppModule.kt
+│   └── ExecutorModule.kt
+├── domain/
+│   ├── executor/             # Command execution
+│   │   ├── CommandExecutor.kt
+│   │   ├── RootExecutor.kt
+│   │   ├── ShizukuExecutor.kt
+│   │   └── PermissionBridge.kt
+│   ├── manager/              # Business logic
+│   │   ├── AppControlManager.kt
+│   │   ├── BatteryManager.kt
+│   │   ├── ActionLogger.kt
+│   │   ├── DisplayManager.kt
+│   │   └── ModeWatcher.kt
+│   ├── scanner/              # App scanning
+│   │   └── AppScanner.kt
+│   ├── monitor/              # System monitoring
+│   │   └── SystemMonitor.kt
+│   └── validator/            # Safety validation
+│       └── SafetyValidator.kt
+├── data/
+│   └── model/                # Data classes
+│       ├── AppInfo.kt
+│       ├── ExecutionMode.kt
+│       ├── SystemInfo.kt
+│       └── ActionLog.kt
+└── ui/
+    ├── MainActivity.kt
+    ├── setup/                # Setup wizard
+    ├── dashboard/            # Dashboard with system info
+    ├── applist/              # App list and detail
+    ├── settings/             # Settings
+    ├── history/              # Action history
+    └── components/           # Reusable UI components
 ```
 
 ## Tech Stack
@@ -151,7 +219,9 @@ com.appcontrolx/
 - Min SDK 29 (Android 10)
 - Target SDK 34 (Android 14)
 - MVVM + Hilt DI
-- Material 3
+- Material 3 with Dynamic Colors
 - Coroutines + Flow
-- libsu (Root)
-- Shizuku-API
+- libsu 5.2.2 (Root)
+- Shizuku-API 13.1.5
+- Navigation Component
+- ViewBinding

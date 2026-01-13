@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="@dimen/card_padding_large"
+    android:gravity="center_vertical">
+
+    <!-- Apps icon -->
+    <ImageView
+        android:layout_width="@dimen/card_icon_size_large"
+        android:layout_height="@dimen/card_icon_size_large"
+        android:src="@drawable/ic_apps"
+        app:tint="?attr/colorPrimary"
+        android:contentDescription="@string/dashboard_apps" />
+
+    <!-- Apps label -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:text="@string/dashboard_apps"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="?attr/colorOnSurface" />
+
+    <!-- Spacer -->
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Apps count -->
+    <TextView
+        android:id="@+id/tvAppsCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textColor="@color/on_surface_secondary"
+        tools:text="156 user • 245 system" />
+
+</LinearLayout>

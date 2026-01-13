@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/background">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,6 +18,7 @@
             android:text="@string/nav_settings"
             android:textSize="24sp"
             android:textStyle="bold"
+            android:textColor="?attr/colorOnSurface"
             android:layout_marginBottom="24dp" />
 
         <!-- Appearance Section -->
@@ -25,6 +28,7 @@
             android:text="@string/settings_appearance"
             android:textColor="?attr/colorPrimary"
             android:textStyle="bold"
+            android:textSize="14sp"
             android:layout_marginBottom="8dp" />
 
         <com.google.android.material.card.MaterialCardView
@@ -32,8 +36,10 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             app:cardElevation="0dp"
+            app:cardCornerRadius="12dp"
             app:strokeWidth="1dp"
-            app:strokeColor="@color/outline">
+            app:strokeColor="@color/outline"
+            app:cardBackgroundColor="@color/surface">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -60,17 +66,26 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/settings_theme"
-                            android:textSize="16sp" />
+                            android:textSize="16sp"
+                            android:textColor="?attr/colorOnSurface" />
 
                         <TextView
                             android:id="@+id/tvCurrentTheme"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="@color/on_surface_secondary"
-                            android:textSize="14sp" />
+                            android:textSize="14sp"
+                            tools:text="System Default" />
                     </LinearLayout>
-                </LinearLayout>
 
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_chevron_right"
+                        android:alpha="0.5"
+                        app:tint="@color/on_surface_secondary"
+                        android:contentDescription="@null" />
+                </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -81,6 +96,7 @@
             android:text="@string/settings_execution"
             android:textColor="?attr/colorPrimary"
             android:textStyle="bold"
+            android:textSize="14sp"
             android:layout_marginBottom="8dp" />
 
         <com.google.android.material.card.MaterialCardView
@@ -88,8 +104,10 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             app:cardElevation="0dp"
+            app:cardCornerRadius="12dp"
             app:strokeWidth="1dp"
-            app:strokeColor="@color/outline">
+            app:strokeColor="@color/outline"
+            app:cardBackgroundColor="@color/surface">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -115,14 +133,16 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/settings_current_mode"
-                            android:textSize="16sp" />
+                            android:textSize="16sp"
+                            android:textColor="?attr/colorOnSurface" />
 
                         <TextView
                             android:id="@+id/tvCurrentMode"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="@color/on_surface_secondary"
-                            android:textSize="14sp" />
+                            android:textSize="14sp"
+                            tools:text="Root Mode" />
                     </LinearLayout>
 
                     <Button
@@ -135,6 +155,162 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Display Section (only visible when Root/Shizuku available) -->
+        <LinearLayout
+            android:id="@+id/sectionDisplay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_display"
+                android:textColor="?attr/colorPrimary"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:layout_marginBottom="8dp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardElevation="0dp"
+                app:cardCornerRadius="12dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/outline"
+                app:cardBackgroundColor="@color/surface">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <!-- Min Refresh Rate -->
+                    <LinearLayout
+                        android:id="@+id/itemMinRefreshRate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingVertical="8dp"
+                        android:background="?attr/selectableItemBackground">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/settings_min_refresh_rate"
+                                android:textSize="16sp"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:id="@+id/tvMinRefreshRate"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/on_surface_secondary"
+                                android:textSize="14sp"
+                                tools:text="60 Hz" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_chevron_right"
+                            android:alpha="0.5"
+                            app:tint="@color/on_surface_secondary"
+                            android:contentDescription="@null" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/outline"
+                        android:layout_marginVertical="8dp" />
+
+                    <!-- Max Refresh Rate -->
+                    <LinearLayout
+                        android:id="@+id/itemMaxRefreshRate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingVertical="8dp"
+                        android:background="?attr/selectableItemBackground">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/settings_max_refresh_rate"
+                                android:textSize="16sp"
+                                android:textColor="?attr/colorOnSurface" />
+
+                            <TextView
+                                android:id="@+id/tvMaxRefreshRate"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/on_surface_secondary"
+                                android:textSize="14sp"
+                                tools:text="120 Hz" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_chevron_right"
+                            android:alpha="0.5"
+                            app:tint="@color/on_surface_secondary"
+                            android:contentDescription="@null" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/outline"
+                        android:layout_marginVertical="8dp" />
+
+                    <!-- Reset Refresh Rate -->
+                    <LinearLayout
+                        android:id="@+id/itemResetRefreshRate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingVertical="8dp"
+                        android:background="?attr/selectableItemBackground">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_reset_refresh_rate"
+                            android:textSize="16sp"
+                            android:textColor="?attr/colorOnSurface" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/settings_reset_refresh_rate_desc"
+                            android:textColor="@color/on_surface_secondary"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+
         <!-- Safety Section -->
         <TextView
             android:layout_width="wrap_content"
@@ -142,6 +318,7 @@
             android:text="@string/settings_safety"
             android:textColor="?attr/colorPrimary"
             android:textStyle="bold"
+            android:textSize="14sp"
             android:layout_marginBottom="8dp" />
 
         <com.google.android.material.card.MaterialCardView
@@ -149,8 +326,10 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             app:cardElevation="0dp"
+            app:cardCornerRadius="12dp"
             app:strokeWidth="1dp"
-            app:strokeColor="@color/outline">
+            app:strokeColor="@color/outline"
+            app:cardBackgroundColor="@color/surface">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -175,7 +354,8 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/settings_confirm_actions"
-                            android:textSize="16sp" />
+                            android:textSize="16sp"
+                            android:textColor="?attr/colorOnSurface" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -214,7 +394,8 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/settings_protect_system"
-                            android:textSize="16sp" />
+                            android:textSize="16sp"
+                            android:textColor="?attr/colorOnSurface" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -239,6 +420,7 @@
             android:text="@string/settings_rollback"
             android:textColor="?attr/colorPrimary"
             android:textStyle="bold"
+            android:textSize="14sp"
             android:layout_marginBottom="8dp" />
 
         <com.google.android.material.card.MaterialCardView
@@ -246,8 +428,10 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             app:cardElevation="0dp"
+            app:cardCornerRadius="12dp"
             app:strokeWidth="1dp"
-            app:strokeColor="@color/outline">
+            app:strokeColor="@color/outline"
+            app:cardBackgroundColor="@color/surface">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -272,7 +456,8 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/settings_auto_snapshot"
-                            android:textSize="16sp" />
+                            android:textSize="16sp"
+                            android:textColor="?attr/colorOnSurface" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -313,14 +498,16 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/settings_view_logs"
-                            android:textSize="16sp" />
+                            android:textSize="16sp"
+                            android:textColor="?attr/colorOnSurface" />
 
                         <TextView
                             android:id="@+id/tvLogCount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="@color/on_surface_secondary"
-                            android:textSize="14sp" />
+                            android:textSize="14sp"
+                            tools:text="0 actions logged" />
                     </LinearLayout>
 
                     <ImageView
@@ -328,6 +515,7 @@
                         android:layout_height="24dp"
                         android:src="@drawable/ic_chevron_right"
                         android:alpha="0.5"
+                        app:tint="@color/on_surface_secondary"
                         android:contentDescription="@null" />
                 </LinearLayout>
 
@@ -349,14 +537,84 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/settings_clear_snapshots"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        android:textColor="?attr/colorOnSurface" />
 
                     <TextView
                         android:id="@+id/tvSnapshotCount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textColor="@color/on_surface_secondary"
-                        android:textSize="14sp" />
+                        android:textSize="14sp"
+                        tools:text="0 snapshots saved" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- About Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/settings_about"
+            android:textColor="?attr/colorPrimary"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:layout_marginBottom="8dp" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardElevation="0dp"
+            app:cardCornerRadius="12dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/outline"
+            app:cardBackgroundColor="@color/surface">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <LinearLayout
+                    android:id="@+id/itemAbout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingVertical="8dp"
+                    android:background="?attr/selectableItemBackground">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/nav_about"
+                            android:textSize="16sp"
+                            android:textColor="?attr/colorOnSurface" />
+
+                        <TextView
+                            android:id="@+id/tvAppVersion"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/on_surface_secondary"
+                            android:textSize="14sp"
+                            tools:text="Version 2.0.0" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_chevron_right"
+                        android:alpha="0.5"
+                        app:tint="@color/on_surface_secondary"
+                        android:contentDescription="@null" />
                 </LinearLayout>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -368,14 +626,17 @@
             android:text="@string/settings_data"
             android:textColor="?attr/colorPrimary"
             android:textStyle="bold"
+            android:textSize="14sp"
             android:layout_marginBottom="8dp" />
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardElevation="0dp"
+            app:cardCornerRadius="12dp"
             app:strokeWidth="1dp"
-            app:strokeColor="@color/outline">
+            app:strokeColor="@color/outline"
+            app:cardBackgroundColor="@color/surface">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -395,7 +656,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/settings_reset_setup"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        android:textColor="?attr/colorOnSurface" />
 
                     <TextView
                         android:layout_width="wrap_content"

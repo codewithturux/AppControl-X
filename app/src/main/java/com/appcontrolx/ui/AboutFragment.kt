@@ -1,10 +1,10 @@
 package com.appcontrolx.ui
 
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,24 +12,54 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.appcontrolx.R
 import com.appcontrolx.databinding.FragmentAboutBinding
-import com.appcontrolx.model.ExecutionMode
-import com.appcontrolx.rollback.RollbackManager
-import com.appcontrolx.service.PermissionBridge
-import android.util.Log
+import com.appcontrolx.domain.executor.PermissionBridge
+import com.appcontrolx.domain.manager.ActionLogger
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
+/**
+ * About screen displaying app information, version, and links.
+ * 
+ * Displays:
+ * - App name, version, and icon
+ * - Current execution mode
+ * - Device statistics (user apps, system apps, actions count)
+ * - Device info (brand, model, Android version)
+ * - Links to GitHub, bug reports, and share functionality
+ * - Open source license information
+ * - No personal branding prominently displayed
+ * 
+ * Requirements: 10.2.1, 10.2.2, 10.2.3, 10.2.4, 10.2.5
+ */
 @AndroidEntryPoint
 class AboutFragment : Fragment() {
     
-    private var _binding: FragmentAboutBinding? = null
-    private val binding get() = _binding
+    companion object {
+        private const val TAG = "AboutFragment"
+        private const val GITHUB_URL = "https://github.com/risunCode/AppControl-X"
+        private const val GITHUB_STARS_URL = "https://github.com/risunCode/AppControl-X/stargazers"
+        private const val GITHUB_ISSUES_URL = "https://github.com/risunCode/AppControl-X/issues/new"
+    }
     
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    private var _binding: FragmentAboutBinding? = null
+    private val binding get() = _binding!!
+    
+    @Inject
+    lateinit var permissionBridge: PermissionBridge
+    
+    @Inject
+    lateinit var actionLogger: ActionLogger
+    
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentAboutBinding.inflate(inflater, container, false)
-        return _binding?.root
+        return binding.root
     }
     
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -41,35 +71,63 @@ class AboutFragment : Fragment() {
         setupLinks()
     }
     
+    /**
+     * Setup app name, version, and current execution mode.
+     * Requirements: 10.2.1, 10.2.2
+     */
     private fun setupAppInfo() {
-        val b = binding ?: return
         try {
             val packageInfo = requireContext().packageManager
                 .getPackageInfo(requireContext().packageName, 0)
             
-            b.tvVersion.text = getString(R.string.about_version_format, 
-                packageInfo.versionName, packageInfo.longVersionCode)
+            val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                packageInfo.longVersionCode
+            } else {
+                @Suppress("DEPRECATION")
+                packageInfo.versionCode.toLong()
+            }
+            
+            binding.tvVersion.text = getString(
+                R.string.about_version_format,
+                packageInfo.versionName,
+                versionCode
+            )
         } catch (e: Exception) {
             Log.e(TAG, "Failed to get package info", e)
+            binding.tvVersion.text = getString(R.string.about_version_format, "Unknown", 0L)
         }
         
-        // Current mode
-        val mode = PermissionBridge(requireContext()).detectMode()
-        b.tvCurrentMode.text = mode.displayName()
+        // Display current execution mode
+        binding.tvCurrentMode.text = permissionBridge.mode.displayName
     }
     
+    /**
+     * Setup device information section.
+     */
     private fun setupSystemInfo() {
-        val b = binding ?: return
-        b.tvDeviceInfo.text = getString(R.string.about_device_format,
-            Build.MANUFACTURER.replaceFirstChar { it.uppercase() }, Build.MODEL)
-        b.tvAndroidVersion.text = getString(R.string.about_android_format,
-            Build.VERSION.RELEASE, Build.VERSION.SDK_INT)
+        // Device brand and model
+        val manufacturer = Build.MANUFACTURER.replaceFirstChar { 
+            if (it.isLowerCase()) it.titlecase() else it.toString() 
+        }
+        binding.tvDeviceInfo.text = getString(
+            R.string.about_device_format,
+            manufacturer,
+            Build.MODEL
+        )
+        
+        // Android version and API level
+        binding.tvAndroidVersion.text = getString(
+            R.string.about_android_format,
+            Build.VERSION.RELEASE,
+            Build.VERSION.SDK_INT
+        )
     }
     
+    /**
+     * Setup statistics section (user apps, system apps, actions count).
+     */
     private fun setupStats() {
-        val b = binding ?: return
-        
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val (userApps, systemApps, actionsCount) = withContext(Dispatchers.IO) {
                 val pm = requireContext().packageManager
                 val packages = pm.getInstalledPackages(0)
@@ -78,64 +136,75 @@ class AboutFragment : Fragment() {
                 var system = 0
                 
                 packages.forEach { pkg ->
-                    if ((pkg.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_SYSTEM) != 0) {
+                    val isSystem = (pkg.applicationInfo?.flags 
+                        ?: 0) and android.content.pm.ApplicationInfo.FLAG_SYSTEM != 0
+                    if (isSystem) {
                         system++
                     } else {
                         user++
                     }
                 }
                 
-                // Get action count from RollbackManager (no executor needed for reading)
-                val actions = RollbackManager(requireContext()).getLogCount()
+                // Get action count from ActionLogger
+                val actions = actionLogger.getActionHistory().size
                 
                 Triple(user, system, actions)
             }
             
-            b.tvUserAppsCount.text = userApps.toString()
-            b.tvSystemAppsCount.text = systemApps.toString()
-            b.tvActionsCount.text = actionsCount.toString()
+            binding.tvUserAppsCount.text = userApps.toString()
+            binding.tvSystemAppsCount.text = systemApps.toString()
+            binding.tvActionsCount.text = actionsCount.toString()
         }
     }
     
+    /**
+     * Setup link buttons for GitHub, star, bug report, and share.
+     * Requirements: 10.2.3
+     */
     private fun setupLinks() {
-        val b = binding ?: return
-        
-        b.btnGithub.setOnClickListener {
-            openUrl("https://github.com/risunCode/AppControl-X")
+        binding.btnGithub.setOnClickListener {
+            openUrl(GITHUB_URL)
         }
         
-        b.btnShare.setOnClickListener {
+        binding.btnRate.setOnClickListener {
+            openUrl(GITHUB_STARS_URL)
+        }
+        
+        binding.btnBugReport.setOnClickListener {
+            openUrl(GITHUB_ISSUES_URL)
+        }
+        
+        binding.btnShare.setOnClickListener {
             shareApp()
         }
-        
-        b.btnRate.setOnClickListener {
-            openUrl("https://github.com/risunCode/AppControl-X/stargazers")
-        }
-        
-        b.btnBugReport.setOnClickListener {
-            openUrl("https://github.com/risunCode/AppControl-X/issues/new")
-        }
     }
     
+    /**
+     * Open a URL in the default browser.
+     */
     private fun openUrl(url: String) {
         try {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            startActivity(intent)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to open URL: $url", e)
         }
     }
     
-    companion object {
-        private const val TAG = "AboutFragment"
-    }
-    
+    /**
+     * Share the app via Android share sheet.
+     */
     private fun shareApp() {
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(Intent.EXTRA_SUBJECT, getString(R.string.app_name))
-            putExtra(Intent.EXTRA_TEXT, getString(R.string.about_share_text))
+        try {
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_SUBJECT, getString(R.string.app_name))
+                putExtra(Intent.EXTRA_TEXT, getString(R.string.about_share_text))
+            }
+            startActivity(Intent.createChooser(intent, getString(R.string.about_share_via)))
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to share app", e)
         }
-        startActivity(Intent.createChooser(intent, getString(R.string.about_share_via)))
     }
     
     override fun onDestroyView() {

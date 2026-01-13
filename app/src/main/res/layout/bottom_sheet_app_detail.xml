@@ -134,7 +134,8 @@
                     android:layout_height="24dp"
                     android:src="@drawable/ic_expand_more"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/detail_show_more_ops"
+                    android:contentDescription="@string/a11y_expand_more"
+                    android:focusable="true"
                     app:tint="@color/on_surface_secondary" />
             </LinearLayout>
 

@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="@dimen/card_padding_large">
+
+    <!-- Device Name Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:layout_width="@dimen/card_icon_size_large"
+            android:layout_height="@dimen/card_icon_size_large"
+            android:src="@drawable/ic_smartphone"
+            app:tint="?attr/colorPrimary"
+            android:contentDescription="@string/dashboard_device" />
+
+        <TextView
+            android:id="@+id/tvDeviceName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnSurface"
+            tools:text="Xiaomi Redmi Note 11 Pro" />
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginVertical="12dp"
+        android:background="@color/outline" />
+
+    <!-- Android Version -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/dashboard_android"
+            android:textSize="14sp"
+            android:textColor="@color/on_surface_secondary" />
+
+        <TextView
+            android:id="@+id/tvAndroidVersion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="?attr/colorOnSurface"
+            tools:text="Android 13 (API 33)" />
+    </LinearLayout>
+
+    <!-- Uptime -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/dashboard_uptime"
+            android:textSize="14sp"
+            android:textColor="@color/on_surface_secondary" />
+
+        <TextView
+            android:id="@+id/tvUptime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="?attr/colorOnSurface"
+            tools:text="2d 5h 32m" />
+    </LinearLayout>
+
+    <!-- Deep Sleep (Root mode only) -->
+    <LinearLayout
+        android:id="@+id/layoutDeepSleep"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/dashboard_deep_sleep"
+            android:textSize="14sp"
+            android:textColor="@color/on_surface_secondary" />
+
+        <TextView
+            android:id="@+id/tvDeepSleep"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="?attr/colorOnSurface"
+            tools:text="18h 45m" />
+    </LinearLayout>
+
+    <!-- Kernel Version -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/dashboard_kernel"
+            android:textSize="14sp"
+            android:textColor="@color/on_surface_secondary" />
+
+        <TextView
+            android:id="@+id/tvKernel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="14sp"
+            android:textColor="?attr/colorOnSurface"
+            android:gravity="end"
+            android:ellipsize="end"
+            android:maxLines="1"
+            tools:text="5.4.147-android12" />
+    </LinearLayout>
+
+    <!-- Build Number -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/dashboard_build"
+            android:textSize="14sp"
+            android:textColor="@color/on_surface_secondary" />
+
+        <TextView
+            android:id="@+id/tvBuild"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="14sp"
+            android:textColor="?attr/colorOnSurface"
+            android:gravity="end"
+            android:ellipsize="end"
+            android:maxLines="1"
+            tools:text="MIUI 14.0.5" />
+    </LinearLayout>
+
+</LinearLayout>

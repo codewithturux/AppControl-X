@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- FeatureCard custom attributes -->
+    <declare-styleable name="FeatureCard">
+        <attr name="featureIcon" format="reference" />
+        <attr name="featureLabel" format="reference|string" />
+        <attr name="featureIconTint" format="reference|color" />
+    </declare-styleable>
+</resources>

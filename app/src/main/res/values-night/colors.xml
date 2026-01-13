@@ -1,27 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Dark theme colors -->
-    <color name="primary">#90CAF9</color>
-    <color name="primary_dark">#42A5F5</color>
-    <color name="secondary">#80CBC4</color>
-    <color name="tertiary">#B39DDB</color>
-    <color name="accent">#FF8A65</color>
+    <!-- Material 3 Dark Theme Colors -->
+    <!-- Generated using Material Theme Builder with Blue as seed color -->
     
+    <!-- Primary -->
+    <color name="md_theme_primary">#A5C8FF</color>
+    <color name="md_theme_onPrimary">#00315E</color>
+    <color name="md_theme_primaryContainer">#004785</color>
+    <color name="md_theme_onPrimaryContainer">#D4E3FF</color>
+    
+    <!-- Secondary -->
+    <color name="md_theme_secondary">#BCC7DC</color>
+    <color name="md_theme_onSecondary">#263141</color>
+    <color name="md_theme_secondaryContainer">#3D4758</color>
+    <color name="md_theme_onSecondaryContainer">#D8E3F8</color>
+    
+    <!-- Tertiary -->
+    <color name="md_theme_tertiary">#DABDE2</color>
+    <color name="md_theme_onTertiary">#3D2946</color>
+    <color name="md_theme_tertiaryContainer">#553F5D</color>
+    <color name="md_theme_onTertiaryContainer">#F7D8FF</color>
+    
+    <!-- Error -->
+    <color name="md_theme_error">#FFB4AB</color>
+    <color name="md_theme_onError">#690005</color>
+    <color name="md_theme_errorContainer">#93000A</color>
+    <color name="md_theme_onErrorContainer">#FFDAD6</color>
+    
+    <!-- Background -->
+    <color name="md_theme_background">#111318</color>
+    <color name="md_theme_onBackground">#E1E2E9</color>
+    
+    <!-- Surface -->
+    <color name="md_theme_surface">#111318</color>
+    <color name="md_theme_onSurface">#E1E2E9</color>
+    <color name="md_theme_surfaceVariant">#43474E</color>
+    <color name="md_theme_onSurfaceVariant">#C3C6CF</color>
+    
+    <!-- Surface containers (Material 3 tonal surfaces) -->
+    <color name="md_theme_surfaceContainerLowest">#0C0E13</color>
+    <color name="md_theme_surfaceContainerLow">#191C20</color>
+    <color name="md_theme_surfaceContainer">#1D2024</color>
+    <color name="md_theme_surfaceContainerHigh">#282A2F</color>
+    <color name="md_theme_surfaceContainerHighest">#33353A</color>
+    
+    <!-- Outline -->
+    <color name="md_theme_outline">#8D9199</color>
+    <color name="md_theme_outlineVariant">#43474E</color>
+    
+    <!-- Inverse -->
+    <color name="md_theme_inverseSurface">#E1E2E9</color>
+    <color name="md_theme_inverseOnSurface">#2E3036</color>
+    <color name="md_theme_inversePrimary">#1565C0</color>
+    
+    <!-- Scrim -->
+    <color name="md_theme_scrim">#000000</color>
+    
+    <!-- Status colors (semantic) - adjusted for dark theme -->
     <color name="status_positive">#81C784</color>
-    <color name="status_negative">#E57373</color>
+    <color name="status_negative">#EF9A9A</color>
     <color name="status_neutral">#BDBDBD</color>
-    <color name="status_frozen">#64B5F6</color>
+    <color name="status_frozen">#90CAF9</color>
+    <color name="status_warning">#FFB74D</color>
+    <color name="status_running">#81C784</color>
+    <color name="status_stopped">#BDBDBD</color>
+    <color name="status_restricted">#FFB74D</color>
     
-    <color name="background">#121212</color>
-    <color name="surface">#1E1E1E</color>
-    <color name="surface_container">#2D2D2D</color>
-    <color name="on_surface">#E0E0E0</color>
-    <color name="on_surface_secondary">#9E9E9E</color>
-    <color name="outline">#424242</color>
-    <color name="warning_color">#FFB74D</color>
-    <color name="warning_bg">#3E2723</color>
+    <!-- Status containers - adjusted for dark theme -->
+    <color name="status_positive_container">#1B5E20</color>
+    <color name="status_negative_container">#B71C1C</color>
+    <color name="status_frozen_container">#0D47A1</color>
+    <color name="status_warning_container">#E65100</color>
     
-    <!-- Selection -->
+    <!-- Legacy color aliases for backward compatibility -->
+    <color name="primary">@color/md_theme_primary</color>
+    <color name="primary_dark">#82B1FF</color>
+    <color name="secondary">@color/md_theme_secondary</color>
+    <color name="tertiary">@color/md_theme_tertiary</color>
+    <color name="accent">@color/md_theme_primary</color>
+    
+    <color name="background">@color/md_theme_background</color>
+    <color name="surface">@color/md_theme_surfaceContainerLow</color>
+    <color name="surface_container">@color/md_theme_surfaceContainer</color>
+    <color name="on_surface">@color/md_theme_onSurface</color>
+    <color name="on_surface_secondary">@color/md_theme_onSurfaceVariant</color>
+    <color name="outline">@color/md_theme_outlineVariant</color>
+    
+    <color name="warning_color">@color/status_warning</color>
+    <color name="warning_bg">@color/status_warning_container</color>
+    
+    <!-- Selection colors - adjusted for dark theme -->
     <color name="selected_bg">#1E3A5F</color>
-    <color name="selected_stroke">#90CAF9</color>
+    <color name="selected_stroke">@color/md_theme_primary</color>
+    
+    <!-- Chip background color selector -->
+    <color name="chip_background_color">@color/md_theme_surfaceContainerHigh</color>
 </resources>

@@ -20,26 +20,34 @@
 -keep class com.appcontrolx.IShellService$* { *; }
 -keep class * extends android.os.Binder { *; }
 
-# Keep Shizuku UserService
--keep class com.appcontrolx.executor.ShellService { *; }
--keep class com.appcontrolx.executor.ShizukuExecutor { *; }
--keep class com.appcontrolx.executor.ShizukuExecutor$* { *; }
+# Keep Shizuku UserService - NEW PACKAGE STRUCTURE
+-keep class com.appcontrolx.domain.executor.ShellService { *; }
+-keep class com.appcontrolx.domain.executor.ShizukuExecutor { *; }
+-keep class com.appcontrolx.domain.executor.ShizukuExecutor$* { *; }
 
-# Keep all executors
--keep class com.appcontrolx.executor.** { *; }
+# Keep all executors - NEW PACKAGE STRUCTURE
+-keep class com.appcontrolx.domain.executor.** { *; }
 
-# Keep MainActivity methods (What's New dialog)
--keepclassmembers class com.appcontrolx.ui.MainActivity {
-    private void showWhatsNewIfNeeded();
-    private void showWhatsNewDialog();
-}
+# Keep all managers
+-keep class com.appcontrolx.domain.manager.** { *; }
 
-# Keep Models
--keep class com.appcontrolx.model.** { *; }
--keep class com.appcontrolx.data.local.entity.** { *; }
+# Keep all validators
+-keep class com.appcontrolx.domain.validator.** { *; }
 
-# Keep Rollback data classes (for Gson serialization)
--keep class com.appcontrolx.rollback.** { *; }
+# Keep all scanners
+-keep class com.appcontrolx.domain.scanner.** { *; }
+
+# Keep all monitors
+-keep class com.appcontrolx.domain.monitor.** { *; }
+
+# Keep Data Models - NEW PACKAGE STRUCTURE
+-keep class com.appcontrolx.data.model.** { *; }
+-keep class com.appcontrolx.data.preferences.** { *; }
+-keep class com.appcontrolx.data.repository.** { *; }
+
+# Keep UI State classes
+-keep class com.appcontrolx.ui.applist.AppListUiState { *; }
+-keep class com.appcontrolx.ui.dashboard.DashboardUiState { *; }
 
 # Keep ViewModels
 -keep class * extends androidx.lifecycle.ViewModel {
@@ -70,12 +78,6 @@
 -keep class * implements com.google.gson.JsonSerializer
 -keep class * implements com.google.gson.JsonDeserializer
 
-# Crashlytics
--keepattributes SourceFile,LineNumberTable
--keep public class * extends java.lang.Exception
--keep class com.google.firebase.crashlytics.** { *; }
--dontwarn com.google.firebase.crashlytics.**
-
 # Coroutines
 -keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
 -keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
@@ -85,11 +87,6 @@
 
 # Remove logging in release
 -assumenosideeffects class android.util.Log {
-    public static *** d(...);
-    public static *** v(...);
-    public static *** i(...);
-}
--assumenosideeffects class timber.log.Timber {
     public static *** d(...);
     public static *** v(...);
     public static *** i(...);

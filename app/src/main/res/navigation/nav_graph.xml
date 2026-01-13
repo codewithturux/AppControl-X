@@ -2,23 +2,42 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/appListFragment">
+    app:startDestination="@id/dashboardFragment">
+
+    <!-- Main bottom navigation destinations -->
+    <fragment
+        android:id="@+id/dashboardFragment"
+        android:name="com.appcontrolx.ui.dashboard.DashboardFragment"
+        android:label="@string/nav_dashboard">
+        
+        <!-- Navigation from Dashboard to App List (feature card) -->
+        <action
+            android:id="@+id/action_dashboard_to_appList"
+            app:destination="@id/appListFragment" />
+        
+        <!-- Navigation from Dashboard to Settings -->
+        <action
+            android:id="@+id/action_dashboard_to_settings"
+            app:destination="@id/settingsFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/appListFragment"
-        android:name="com.appcontrolx.ui.AppListFragment"
+        android:name="com.appcontrolx.ui.applist.AppListFragment"
         android:label="@string/nav_apps" />
 
     <fragment
-        android:id="@+id/toolsFragment"
-        android:name="com.appcontrolx.ui.ToolsFragment"
-        android:label="@string/nav_tools" />
-
-    <fragment
         android:id="@+id/settingsFragment"
-        android:name="com.appcontrolx.ui.SettingsFragment"
-        android:label="@string/nav_settings" />
+        android:name="com.appcontrolx.ui.settings.SettingsFragment"
+        android:label="@string/nav_settings">
+        
+        <!-- Navigation from Settings to About -->
+        <action
+            android:id="@+id/action_settings_to_about"
+            app:destination="@id/aboutFragment" />
+    </fragment>
 
+    <!-- Secondary destinations (not in bottom nav) -->
     <fragment
         android:id="@+id/aboutFragment"
         android:name="com.appcontrolx.ui.AboutFragment"
