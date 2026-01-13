@@ -16,11 +16,13 @@ import java.util.concurrent.TimeUnit
  * 
  * Features:
  * - Device brand and model
- * - Android version and API level
+ * - SoC/processor name
+ * - Android version with codename
  * - System uptime
- * - Deep sleep time (Root mode only)
+ * - Deep sleep time with percentage (Root mode only)
  * - Kernel version
  * - Build number
+ * - DevCheck-style design
  * 
  * Requirements: 0.2.1-0.2.7 - Device Info card with all device details
  */
@@ -31,6 +33,8 @@ class DeviceInfoCard @JvmOverloads constructor(
 ) : MaterialCardView(context, attrs, defStyleAttr) {
 
     private val tvDeviceName: TextView
+    private val layoutSoc: LinearLayout
+    private val tvSoc: TextView
     private val tvAndroidVersion: TextView
     private val tvUptime: TextView
     private val layoutDeepSleep: LinearLayout
@@ -46,6 +50,8 @@ class DeviceInfoCard @JvmOverloads constructor(
         setCardBackgroundColor(context.getColor(R.color.surface))
         
         tvDeviceName = findViewById(R.id.tvDeviceName)
+        layoutSoc = findViewById(R.id.layoutSoc)
+        tvSoc = findViewById(R.id.tvSoc)
         tvAndroidVersion = findViewById(R.id.tvAndroidVersion)
         tvUptime = findViewById(R.id.tvUptime)
         layoutDeepSleep = findViewById(R.id.layoutDeepSleep)
@@ -61,16 +67,34 @@ class DeviceInfoCard @JvmOverloads constructor(
         // Device name
         tvDeviceName.text = "${device.brand} ${device.model}"
         
-        // Android version
-        tvAndroidVersion.text = "Android ${device.androidVersion} (API ${device.apiLevel})"
+        // SoC/Processor name
+        device.socName?.let { soc ->
+            tvSoc.text = soc
+            layoutSoc.visibility = View.VISIBLE
+        } ?: run {
+            layoutSoc.visibility = View.GONE
+        }
+        
+        // Android version with codename
+        val androidText = if (device.androidCodename != null) {
+            "Android ${device.androidVersion} (${device.androidCodename})"
+        } else {
+            "Android ${device.androidVersion} (API ${device.apiLevel})"
+        }
+        tvAndroidVersion.text = androidText
         
         // Uptime
         tvUptime.text = formatDuration(device.uptimeMs)
         
-        // Deep sleep (only shown in Root mode)
+        // Deep sleep with percentage (only shown in Root mode)
         device.deepSleepMs?.let { deepSleep ->
             layoutDeepSleep.visibility = View.VISIBLE
-            tvDeepSleep.text = formatDuration(deepSleep)
+            val deepSleepPercent = if (device.uptimeMs > 0) {
+                ((deepSleep.toFloat() / device.uptimeMs) * 100).toInt()
+            } else {
+                0
+            }
+            tvDeepSleep.text = "${formatDurationDetailed(deepSleep)} ($deepSleepPercent%)"
         } ?: run {
             layoutDeepSleep.visibility = View.GONE
         }
@@ -88,6 +112,7 @@ class DeviceInfoCard @JvmOverloads constructor(
     fun setLoading(loading: Boolean) {
         if (loading) {
             tvDeviceName.text = "--"
+            layoutSoc.visibility = View.GONE
             tvAndroidVersion.text = "--"
             tvUptime.text = "--"
             layoutDeepSleep.visibility = View.GONE
@@ -105,6 +130,20 @@ class DeviceInfoCard @JvmOverloads constructor(
             if (days > 0) append("${days}d ")
             if (hours > 0 || days > 0) append("${hours}h ")
             append("${minutes}m")
+        }.trim()
+    }
+    
+    private fun formatDurationDetailed(millis: Long): String {
+        val days = TimeUnit.MILLISECONDS.toDays(millis)
+        val hours = TimeUnit.MILLISECONDS.toHours(millis) % 24
+        val minutes = TimeUnit.MILLISECONDS.toMinutes(millis) % 60
+        val seconds = TimeUnit.MILLISECONDS.toSeconds(millis) % 60
+        
+        return buildString {
+            if (days > 0) append("${days}d ")
+            if (hours > 0 || days > 0) append("${hours}h ")
+            if (minutes > 0 || hours > 0 || days > 0) append("${minutes}m ")
+            append("${seconds}s")
         }.trim()
     }
 }

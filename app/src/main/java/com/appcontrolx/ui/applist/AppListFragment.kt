@@ -15,7 +15,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.appcontrolx.R
 import com.appcontrolx.data.model.AppInfo
-import com.appcontrolx.data.model.AppStatus
+import com.appcontrolx.data.model.AppListFilter
 import com.appcontrolx.data.model.ExecutionMode
 import com.appcontrolx.databinding.FragmentAppListBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -28,13 +28,13 @@ import kotlinx.coroutines.launch
  * Features:
  * - RecyclerView with app items showing icon, name, package, and status badges
  * - Search bar for filtering by name or package name
- * - Filter chips for User/System apps and status filter
+ * - Filter/Sort bottom sheet for filtering and sorting apps
  * - Selection bar for batch operations
  * 
- * Requirements: 8.1, 8.3, 8.4, 8.5
+ * Requirements: 3.1, 3.2, 3.3, 3.6, 3.7, 3.8
  */
 @AndroidEntryPoint
-class AppListFragment : Fragment() {
+class AppListFragment : Fragment(), FilterSortCallback {
 
     private var _binding: FragmentAppListBinding? = null
     private val binding get() = _binding!!
@@ -57,8 +57,7 @@ class AppListFragment : Fragment() {
         
         setupRecyclerView()
         setupSearch()
-        setupChips()
-        setupStatusFilter()
+        setupFilterButton()
         setupSelectionBar()
         setupSelectAll()
         setupSwipeRefresh()
@@ -66,6 +65,16 @@ class AppListFragment : Fragment() {
         
         // Initial load
         viewModel.loadApps()
+    }
+
+    /**
+     * FilterSortCallback implementation.
+     * Called when user applies filter/sort from bottom sheet.
+     * Requirements: 3.6, 3.7, 3.8
+     */
+    override fun onFilterSortChanged(filter: AppListFilter) {
+        viewModel.onFilterSortChanged(filter)
+        updateFilterButtonText(filter)
     }
 
 
@@ -109,60 +118,26 @@ class AppListFragment : Fragment() {
     }
 
     /**
-     * Setup User/System app filter chips.
-     * Requirement: 8.5
+     * Setup filter button to show FilterSortBottomSheet.
+     * Requirements: 3.3, 3.8
      */
-    private fun setupChips() {
-        binding.chipUserApps.isChecked = true
-        
-        binding.chipUserApps.setOnClickListener {
-            if (!binding.chipUserApps.isChecked) {
-                binding.chipUserApps.isChecked = true
-            } else {
-                binding.chipSystemApps.isChecked = false
-                viewModel.onShowSystemAppsChanged(false)
-                adapter.deselectAll()
-            }
-        }
-        
-        binding.chipSystemApps.setOnClickListener {
-            if (!binding.chipSystemApps.isChecked) {
-                binding.chipSystemApps.isChecked = true
-            } else {
-                binding.chipUserApps.isChecked = false
-                viewModel.onShowSystemAppsChanged(true)
-                adapter.deselectAll()
-            }
+    private fun setupFilterButton() {
+        binding.btnFilter.setOnClickListener {
+            val currentFilter = viewModel.uiState.value.appListFilter
+            FilterSortBottomSheet.show(
+                fragmentManager = childFragmentManager,
+                currentFilter = currentFilter,
+                callback = this
+            )
         }
     }
 
     /**
-     * Setup status filter chip with dialog.
-     * Requirement: 8.4
+     * Update filter button text based on current filter.
+     * Requirement: 3.8
      */
-    private fun setupStatusFilter() {
-        binding.chipStatusFilter.setOnClickListener {
-            val filterNames = arrayOf(
-                getString(R.string.filter_all),
-                getString(R.string.filter_running),
-                getString(R.string.filter_stopped),
-                getString(R.string.filter_frozen),
-                getString(R.string.filter_restricted)
-            )
-            val filters = StatusFilter.entries.toTypedArray()
-            val currentIndex = filters.indexOf(viewModel.uiState.value.statusFilter)
-            
-            MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.filter_status_title)
-                .setSingleChoiceItems(filterNames, currentIndex) { dialog, which ->
-                    val selectedFilter = filters[which]
-                    viewModel.onStatusFilterChanged(selectedFilter)
-                    binding.chipStatusFilter.text = filterNames[which]
-                    dialog.dismiss()
-                }
-                .setNegativeButton(android.R.string.cancel, null)
-                .show()
-        }
+    private fun updateFilterButtonText(filter: AppListFilter) {
+        binding.btnFilter.text = filter.filterType.displayName
     }
 
     /**
@@ -226,8 +201,8 @@ class AppListFragment : Fragment() {
      * Update UI based on current state.
      */
     private fun updateUi(state: AppListUiState) {
-        // Update mode indicator
-        updateModeIndicator(state.executionMode)
+        // Update filter button text
+        updateFilterButtonText(state.appListFilter)
         
         // Update loading state
         binding.progressBar.visibility = if (state.isLoading) View.VISIBLE else View.GONE
@@ -250,18 +225,6 @@ class AppListFragment : Fragment() {
         state.error?.let { error ->
             showErrorState(error)
         }
-    }
-
-    /**
-     * Update mode indicator in header.
-     */
-    private fun updateModeIndicator(mode: ExecutionMode) {
-        val modeText = when (mode) {
-            ExecutionMode.Root -> "ROOT"
-            ExecutionMode.Shizuku -> "SHIZUKU"
-            ExecutionMode.None -> "VIEW ONLY"
-        }
-        binding.tvModeIndicator.text = modeText
     }
 
     /**

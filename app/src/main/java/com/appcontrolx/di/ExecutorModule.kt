@@ -7,6 +7,8 @@ import com.appcontrolx.domain.executor.PermissionBridge
 import com.appcontrolx.domain.executor.RootExecutor
 import com.appcontrolx.domain.executor.ShizukuExecutor
 import com.appcontrolx.domain.manager.ActionLogger
+import com.appcontrolx.domain.manager.AnimationScaleManager
+import com.appcontrolx.domain.manager.AnimationScaleManagerImpl
 import com.appcontrolx.domain.manager.DisplayManager
 import dagger.Module
 import dagger.Provides
@@ -95,4 +97,14 @@ object ExecutorModule {
         @ApplicationContext context: Context,
         commandExecutor: CommandExecutor
     ): ActionLogger = ActionLogger(context, commandExecutor)
+    
+    /**
+     * Provides AnimationScaleManager for animation scale control.
+     * Requirements: 7.4
+     */
+    @Provides
+    @Singleton
+    fun provideAnimationScaleManager(
+        commandExecutor: CommandExecutor
+    ): AnimationScaleManager = AnimationScaleManagerImpl(commandExecutor)
 }

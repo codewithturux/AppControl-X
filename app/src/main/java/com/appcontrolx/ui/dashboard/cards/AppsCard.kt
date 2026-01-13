@@ -9,12 +9,13 @@ import com.appcontrolx.data.model.AppCounts
 import com.google.android.material.card.MaterialCardView
 
 /**
- * Wide card component displaying installed app counts.
+ * Card component displaying installed app counts with user/system breakdown.
  * 
  * Features:
+ * - Total apps count (prominent)
  * - User apps count
  * - System apps count
- * - Horizontal layout
+ * - DevCheck-style design
  * 
  * Requirements: 0.1.8 - Apps card showing total user apps and system apps count
  */
@@ -24,7 +25,9 @@ class AppsCard @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : MaterialCardView(context, attrs, defStyleAttr) {
 
-    private val tvCount: TextView
+    private val tvTotal: TextView
+    private val tvUser: TextView
+    private val tvSystem: TextView
 
     init {
         LayoutInflater.from(context).inflate(R.layout.card_apps, this, true)
@@ -33,18 +36,18 @@ class AppsCard @JvmOverloads constructor(
         radius = resources.getDimension(R.dimen.card_corner_radius)
         setCardBackgroundColor(context.getColor(R.color.surface))
         
-        tvCount = findViewById(R.id.tvAppsCount)
+        tvTotal = findViewById(R.id.tvAppsTotal)
+        tvUser = findViewById(R.id.tvAppsUser)
+        tvSystem = findViewById(R.id.tvAppsSystem)
     }
 
     /**
      * Update the card with app counts.
      */
     fun update(counts: AppCounts) {
-        tvCount.text = context.getString(
-            R.string.dashboard_apps_count,
-            counts.userApps,
-            counts.systemApps
-        )
+        tvTotal.text = context.getString(R.string.dashboard_apps_total, counts.total)
+        tvUser.text = context.getString(R.string.dashboard_apps_user, counts.userApps)
+        tvSystem.text = context.getString(R.string.dashboard_apps_system, counts.systemApps)
     }
 
     /**
@@ -52,7 +55,9 @@ class AppsCard @JvmOverloads constructor(
      */
     fun setLoading(loading: Boolean) {
         if (loading) {
-            tvCount.text = "-- user • -- system"
+            tvTotal.text = "-- Total"
+            tvUser.text = "-- User"
+            tvSystem.text = "-- System"
         }
     }
 }

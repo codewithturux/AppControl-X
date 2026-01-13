@@ -2,6 +2,7 @@
 <com.google.android.material.card.MaterialCardView 
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/cardApp"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -36,17 +37,40 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:layout_marginStart="12dp">
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="8dp">
 
-            <TextView
-                android:id="@+id/tvAppName"
-                android:layout_width="wrap_content"
+            <!-- App name row with protected lock icon -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                android:textColor="?attr/colorOnSurface"
-                android:maxLines="1"
-                android:ellipsize="end" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tvAppName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    tools:text="App Name" />
+
+                <!-- Protected lock icon (Requirement 5.3) -->
+                <ImageView
+                    android:id="@+id/ivProtectedIcon"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginStart="4dp"
+                    android:src="@drawable/ic_security"
+                    android:contentDescription="@string/a11y_protected_app"
+                    android:visibility="gone"
+                    app:tint="@color/status_warning"
+                    tools:visibility="visible" />
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/tvPackageName"
@@ -57,8 +81,41 @@
                 android:textColor="@color/on_surface_secondary"
                 android:maxLines="1"
                 android:ellipsize="end"
-                android:fontFamily="monospace" />
+                android:fontFamily="monospace"
+                tools:text="com.example.app" />
 
+            <!-- Version and size row (Requirement 5.1) -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tvVersion"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="10sp"
+                    android:textColor="@color/on_surface_secondary"
+                    tools:text="v1.0.0" />
+
+                <View
+                    android:layout_width="4dp"
+                    android:layout_height="4dp"
+                    android:layout_marginHorizontal="6dp"
+                    android:background="@drawable/dot_inactive" />
+
+                <TextView
+                    android:id="@+id/tvSize"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="10sp"
+                    android:textColor="@color/on_surface_secondary"
+                    tools:text="12.5 MB" />
+            </LinearLayout>
+
+            <!-- Status badges container (Requirements 5.2, 4.7, 4.8, 4.9) -->
             <LinearLayout
                 android:id="@+id/statusContainer"
                 android:layout_width="wrap_content"
@@ -66,31 +123,36 @@
                 android:layout_marginTop="6dp"
                 android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/tvStatusFrozen"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/badge_frozen"
-                    android:textSize="9sp"
-                    android:textColor="@android:color/white"
-                    android:background="@drawable/badge_frozen"
-                    android:paddingHorizontal="8dp"
-                    android:paddingVertical="3dp"
-                    android:visibility="gone" />
-
+                <!-- Running state badge (Requirement 4.7) -->
                 <TextView
                     android:id="@+id/tvStatusRunning"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="4dp"
                     android:text="@string/badge_running"
                     android:textSize="9sp"
                     android:textColor="@android:color/white"
                     android:background="@drawable/badge_running"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="3dp"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+                    tools:visibility="visible" />
 
+                <!-- Awakened state badge (Requirement 4.8) -->
+                <TextView
+                    android:id="@+id/tvStatusAwakened"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/badge_awakened"
+                    android:textSize="9sp"
+                    android:textColor="@android:color/white"
+                    android:background="@drawable/badge_awakened"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+                <!-- Stopped state badge (Requirement 4.9) -->
                 <TextView
                     android:id="@+id/tvStatusStopped"
                     android:layout_width="wrap_content"
@@ -102,8 +164,25 @@
                     android:background="@drawable/badge_stopped"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="3dp"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+                    tools:visibility="visible" />
 
+                <!-- Frozen badge -->
+                <TextView
+                    android:id="@+id/tvStatusFrozen"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/badge_frozen"
+                    android:textSize="9sp"
+                    android:textColor="@android:color/white"
+                    android:background="@drawable/badge_frozen"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+                <!-- Background restriction badge (Requirement 5.2) -->
                 <TextView
                     android:id="@+id/tvStatusRestricted"
                     android:layout_width="wrap_content"
@@ -115,7 +194,8 @@
                     android:background="@drawable/badge_restricted"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="3dp"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+                    tools:visibility="visible" />
             </LinearLayout>
         </LinearLayout>
 

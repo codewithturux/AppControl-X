@@ -1,54 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
     android:padding="@dimen/card_padding">
 
-    <!-- Header with icon and title -->
+    <!-- Overflow menu icon at top-right -->
+    <ImageView
+        android:id="@+id/ivOverflowMenu"
+        android:layout_width="@dimen/overflow_menu_size"
+        android:layout_height="@dimen/overflow_menu_size"
+        android:layout_gravity="top|end"
+        android:src="@drawable/ic_more_vert"
+        app:tint="@color/on_surface_secondary"
+        android:contentDescription="@string/a11y_expand_more"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="2dp" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:orientation="vertical">
 
-        <ImageView
-            android:id="@+id/ivBatteryIcon"
-            android:layout_width="@dimen/card_icon_size"
-            android:layout_height="@dimen/card_icon_size"
-            android:src="@drawable/ic_battery_alert"
-            app:tint="@color/status_positive"
-            android:contentDescription="@string/dashboard_battery" />
+        <!-- Header with icon and title -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
+            <ImageView
+                android:id="@+id/ivBatteryIcon"
+                android:layout_width="@dimen/card_icon_size"
+                android:layout_height="@dimen/card_icon_size"
+                android:src="@drawable/ic_battery_alert"
+                app:tint="@color/status_positive"
+                android:contentDescription="@string/dashboard_battery" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="@string/dashboard_battery"
+                android:textSize="12sp"
+                android:textColor="@color/on_surface_secondary" />
+        </LinearLayout>
+
+        <!-- Battery percentage -->
         <TextView
+            android:id="@+id/tvBatteryPercent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:text="@string/dashboard_battery"
+            android:layout_marginTop="8dp"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnSurface"
+            tools:text="78%" />
+
+        <!-- Temperature -->
+        <TextView
+            android:id="@+id/tvBatteryTemp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:textSize="12sp"
-            android:textColor="@color/on_surface_secondary" />
+            android:textColor="@color/on_surface_secondary"
+            tools:text="32°C" />
+
+        <!-- Charging/Discharging status -->
+        <TextView
+            android:id="@+id/tvBatteryStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="@color/status_positive"
+            tools:text="Charging" />
+
     </LinearLayout>
 
-    <!-- Battery percentage -->
-    <TextView
-        android:id="@+id/tvBatteryPercent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:textColor="?attr/colorOnSurface"
-        tools:text="78%" />
-
-    <!-- Temperature and charging status -->
-    <TextView
-        android:id="@+id/tvBatteryDetail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="12sp"
-        android:textColor="@color/on_surface_secondary"
-        tools:text="32°C • Charging" />
-
-</LinearLayout>
+</FrameLayout>

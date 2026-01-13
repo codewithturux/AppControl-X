@@ -10,7 +10,12 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import com.appcontrolx.data.model.AppInfo
+import com.appcontrolx.data.model.AppRunningState
 import com.appcontrolx.data.model.ExecutionMode
+import com.appcontrolx.domain.detector.AppRunningStateDetector
+import com.appcontrolx.domain.detector.RootRunningStateDetector
+import com.appcontrolx.domain.detector.ShizukuRunningStateDetector
+import com.appcontrolx.domain.detector.ViewOnlyRunningStateDetector
 import com.appcontrolx.domain.executor.CommandExecutor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
@@ -23,11 +28,11 @@ import javax.inject.Singleton
  * Scans and retrieves information about installed applications.
  * 
  * Uses different detection methods based on execution mode:
- * - Root: dumpsys activity processes (most accurate)
- * - Shizuku: Shizuku API to execute dumpsys
- * - None: ActivityManager.getRunningAppProcesses() (fallback, less accurate)
+ * - Root: /proc check + dumpsys services (most accurate)
+ * - Shizuku: dumpsys services
+ * - None: UsageStatsManager + FLAG_STOPPED fallback
  * 
- * Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7
+ * Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6
  */
 @Singleton
 class AppScanner @Inject constructor(
@@ -54,14 +59,21 @@ class AppScanner @Inject constructor(
     private var executor: CommandExecutor? = null
     private var executionMode: ExecutionMode = ExecutionMode.None
     
+    // Running state detector based on execution mode (Requirement 4.1, 4.6)
+    private var runningStateDetector: AppRunningStateDetector? = null
+    
     // Package change receiver
     private var packageReceiver: BroadcastReceiver? = null
     private var isReceiverRegistered = false
+
 
     
     /**
      * Set the command executor and execution mode.
      * Call this when execution mode changes.
+     * Creates appropriate AppRunningStateDetector based on mode.
+     * 
+     * Requirements: 4.2, 4.3, 4.4, 4.5
      * 
      * @param executor The command executor to use (null for View-Only mode)
      * @param mode The current execution mode
@@ -69,6 +81,20 @@ class AppScanner @Inject constructor(
     fun setExecutor(executor: CommandExecutor?, mode: ExecutionMode) {
         this.executor = executor
         this.executionMode = mode
+        
+        // Create appropriate running state detector based on mode (Requirements 4.2-4.5)
+        runningStateDetector = when (mode) {
+            ExecutionMode.Root -> {
+                executor?.let { RootRunningStateDetector(context, it) }
+            }
+            ExecutionMode.Shizuku -> {
+                executor?.let { ShizukuRunningStateDetector(context, it) }
+            }
+            ExecutionMode.None -> {
+                ViewOnlyRunningStateDetector(context)
+            }
+        }
+        
         // Invalidate cache when mode changes as running status detection may differ
         invalidateCache()
     }
@@ -82,7 +108,6 @@ class AppScanner @Inject constructor(
         
         packageReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                // Invalidate cache when packages change
                 invalidateCache()
             }
         }
@@ -138,12 +163,14 @@ class AppScanner @Inject constructor(
         }
     }
 
+
     
     /**
      * Scan all installed applications.
      * Uses cache if available and not invalidated.
+     * Integrates AppRunningStateDetector for accurate running state detection.
      * 
-     * Requirements: 2.1, 2.7
+     * Requirements: 4.1, 4.6
      * 
      * @return List of all installed apps sorted by name
      */
@@ -184,15 +211,27 @@ class AppScanner @Inject constructor(
     
     /**
      * Fetch all apps from PackageManager with running status.
-     * Internal method that always fetches fresh data.
+     * Uses AppRunningStateDetector for accurate running state detection.
+     * 
+     * Requirements: 4.1, 4.6
      */
     private suspend fun fetchAllApps(): List<AppInfo> {
         val packages = packageManager.getInstalledPackages(PackageManager.GET_META_DATA)
         val runningPackages = getRunningPackages()
         
+        // Get package names for batch running state detection
+        val packageNames = packages.mapNotNull { it.packageName }
+        
+        // Detect running states in batch using AppRunningStateDetector (Requirement 4.6)
+        val runningStates = runningStateDetector?.detectBatchRunningStates(packageNames)
+            ?: emptyMap()
+        
         return packages.mapNotNull { pkg ->
             try {
                 val appInfo = pkg.applicationInfo ?: return@mapNotNull null
+                
+                // Get running state from detector (Requirement 4.6)
+                val runningState = runningStates[pkg.packageName] ?: AppRunningState.UNKNOWN
                 
                 AppInfo(
                     packageName = pkg.packageName,
@@ -211,31 +250,50 @@ class AppScanner @Inject constructor(
                     isStopped = (appInfo.flags and ApplicationInfo.FLAG_STOPPED) != 0,
                     isBackgroundRestricted = getBackgroundRestrictionStatus(pkg.packageName, appInfo.uid),
                     installedTime = pkg.firstInstallTime,
-                    lastUpdateTime = pkg.lastUpdateTime
+                    lastUpdateTime = pkg.lastUpdateTime,
+                    size = getAppSize(appInfo),
+                    runningState = runningState
                 )
             } catch (e: Exception) {
                 null
             }
         }.sortedBy { it.appName.lowercase() }
     }
+    
+    /**
+     * Get the size of an application in bytes.
+     * Uses the sourceDir to get the APK file size.
+     * 
+     * @param appInfo The ApplicationInfo of the app
+     * @return Size in bytes, or 0 if unable to determine
+     */
+    private fun getAppSize(appInfo: ApplicationInfo): Long {
+        return try {
+            val sourceDir = appInfo.sourceDir
+            if (sourceDir != null) {
+                java.io.File(sourceDir).length()
+            } else {
+                0L
+            }
+        } catch (e: Exception) {
+            0L
+        }
+    }
+
 
     
     /**
      * Get the set of currently running packages.
      * Uses different methods based on execution mode.
      * 
-     * Requirements: 2.2, 2.3, 2.4
-     * 
      * @return Set of package names that are currently running
      */
     private suspend fun getRunningPackages(): Set<String> {
         return when (executionMode) {
             ExecutionMode.Root, ExecutionMode.Shizuku -> {
-                // Use dumpsys for accurate detection (Requirements 2.2, 2.3)
                 getRunningPackagesViaDumpsys()
             }
             ExecutionMode.None -> {
-                // Fallback to ActivityManager (Requirement 2.4)
                 getRunningPackagesViaActivityManager()
             }
         }
@@ -245,8 +303,6 @@ class AppScanner @Inject constructor(
      * Get running packages using dumpsys activity processes.
      * Most accurate method, requires Root or Shizuku.
      * 
-     * Requirements: 2.2, 2.3
-     * 
      * @return Set of running package names
      */
     internal suspend fun getRunningPackagesViaDumpsys(): Set<String> {
@@ -254,15 +310,10 @@ class AppScanner @Inject constructor(
         val exec = executor ?: return getRunningPackagesViaActivityManager()
         
         try {
-            // Primary method: dumpsys activity processes
             val result = exec.execute("dumpsys activity processes")
             
             result.onSuccess { output ->
-                // Parse output for package names
-                // Look for lines like: "app=ProcessRecord{...packageName/uid}"
-                // or "packageName/uid" patterns
                 output.lines().forEach { line ->
-                    // Pattern 1: app=ProcessRecord{hash packageName/uid}
                     if (line.contains("app=")) {
                         val match = APP_PATTERN.find(line)
                         match?.groupValues?.getOrNull(1)?.let { pkg ->
@@ -272,7 +323,6 @@ class AppScanner @Inject constructor(
                         }
                     }
                     
-                    // Pattern 2: ProcessRecord{hash uid:packageName/uid}
                     if (line.contains("ProcessRecord")) {
                         val match = PROCESS_RECORD_PATTERN.find(line)
                         match?.groupValues?.getOrNull(1)?.let { pkg ->
@@ -282,7 +332,6 @@ class AppScanner @Inject constructor(
                         }
                     }
                     
-                    // Pattern 3: Proc # N: adj=... /packageName (pid)
                     if (line.contains("Proc #")) {
                         val match = PROC_PATTERN.find(line)
                         match?.groupValues?.getOrNull(1)?.let { pkg ->
@@ -294,7 +343,6 @@ class AppScanner @Inject constructor(
                 }
             }
             
-            // If primary method didn't find anything, try alternative
             if (running.isEmpty()) {
                 val altResult = exec.execute("ps -A -o NAME")
                 altResult.onSuccess { output ->
@@ -308,11 +356,9 @@ class AppScanner @Inject constructor(
             }
             
         } catch (e: Exception) {
-            // Fall back to ActivityManager on error
             return getRunningPackagesViaActivityManager()
         }
         
-        // If still empty, use ActivityManager as fallback
         if (running.isEmpty()) {
             return getRunningPackagesViaActivityManager()
         }
@@ -326,14 +372,11 @@ class AppScanner @Inject constructor(
      * Fallback method for View-Only mode or when dumpsys fails.
      * Less accurate on Android 10+ due to privacy restrictions.
      * 
-     * Requirement: 2.4
-     * 
      * @return Set of running package names
      */
     internal fun getRunningPackagesViaActivityManager(): Set<String> {
         val running = mutableSetOf<String>()
         
-        // Method 1: runningAppProcesses (limited on Android 10+)
         try {
             activityManager.runningAppProcesses?.forEach { process ->
                 process.pkgList?.forEach { pkg ->
@@ -344,7 +387,6 @@ class AppScanner @Inject constructor(
             // Ignore
         }
         
-        // Method 2: getRunningServices (deprecated but still works)
         try {
             @Suppress("DEPRECATION")
             activityManager.getRunningServices(Int.MAX_VALUE)?.forEach { service ->
@@ -361,8 +403,6 @@ class AppScanner @Inject constructor(
      * Check if an app has background restrictions enabled.
      * Uses AppOpsManager to query RUN_IN_BACKGROUND operation.
      * 
-     * Requirement: 2.5
-     * 
      * @param packageName The package to check
      * @param uid The UID of the package
      * @return true if background is restricted, false otherwise
@@ -370,7 +410,6 @@ class AppScanner @Inject constructor(
     internal fun getBackgroundRestrictionStatus(packageName: String, uid: Int): Boolean {
         return try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                // RUN_IN_BACKGROUND operation
                 val mode = appOpsManager.unsafeCheckOpNoThrow(
                     "android:run_in_background",
                     uid,
@@ -397,7 +436,6 @@ class AppScanner @Inject constructor(
     }
     
     companion object {
-        // Regex patterns for parsing dumpsys output
         private val APP_PATTERN = Regex("""app=ProcessRecord\{[^}]+\s+([a-zA-Z][a-zA-Z0-9_.]*)/""")
         private val PROCESS_RECORD_PATTERN = Regex("""ProcessRecord\{[^}]+\s+\d+:([a-zA-Z][a-zA-Z0-9_.]*)/""")
         private val PROC_PATTERN = Regex("""/([a-zA-Z][a-zA-Z0-9_.]+)\s*\(""")

@@ -1,44 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="@dimen/card_padding_large"
-    android:gravity="center_vertical">
+    android:padding="@dimen/card_padding">
 
-    <!-- Apps icon -->
+    <!-- Overflow menu icon at top-right -->
     <ImageView
-        android:layout_width="@dimen/card_icon_size_large"
-        android:layout_height="@dimen/card_icon_size_large"
-        android:src="@drawable/ic_apps"
-        app:tint="?attr/colorPrimary"
-        android:contentDescription="@string/dashboard_apps" />
+        android:id="@+id/ivOverflowMenu"
+        android:layout_width="@dimen/overflow_menu_size"
+        android:layout_height="@dimen/overflow_menu_size"
+        android:layout_gravity="top|end"
+        android:src="@drawable/ic_more_vert"
+        app:tint="@color/on_surface_secondary"
+        android:contentDescription="@string/a11y_expand_more"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="2dp" />
 
-    <!-- Apps label -->
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:text="@string/dashboard_apps"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:textColor="?attr/colorOnSurface" />
+        android:orientation="vertical">
 
-    <!-- Spacer -->
-    <View
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        <!-- Header with icon and title -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-    <!-- Apps count -->
-    <TextView
-        android:id="@+id/tvAppsCount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:textColor="@color/on_surface_secondary"
-        tools:text="156 user • 245 system" />
+            <ImageView
+                android:layout_width="@dimen/card_icon_size"
+                android:layout_height="@dimen/card_icon_size"
+                android:src="@drawable/ic_apps"
+                app:tint="?attr/colorPrimary"
+                android:contentDescription="@string/dashboard_apps" />
 
-</LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:text="@string/dashboard_apps"
+                android:textSize="12sp"
+                android:textColor="@color/on_surface_secondary" />
+        </LinearLayout>
+
+        <!-- Total apps count (prominent) -->
+        <TextView
+            android:id="@+id/tvAppsTotal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnSurface"
+            tools:text="94 Total" />
+
+        <!-- User apps count -->
+        <TextView
+            android:id="@+id/tvAppsUser"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="@color/on_surface_secondary"
+            tools:text="64 User" />
+
+        <!-- System apps count -->
+        <TextView
+            android:id="@+id/tvAppsSystem"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="@color/on_surface_secondary"
+            tools:text="30 System" />
+
+    </LinearLayout>
+
+</FrameLayout>

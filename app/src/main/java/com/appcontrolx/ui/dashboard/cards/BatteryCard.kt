@@ -14,9 +14,10 @@ import com.google.android.material.card.MaterialCardView
  * 
  * Features:
  * - Battery percentage display
- * - Charging indicator
  * - Temperature display
+ * - Charging/Discharging status text
  * - Color-coded icon based on battery level
+ * - DevCheck-style design
  * 
  * Requirements: 0.1.2 - Battery card showing percentage, charging status, and temperature
  */
@@ -28,7 +29,8 @@ class BatteryCard @JvmOverloads constructor(
 
     private val ivIcon: ImageView
     private val tvPercent: TextView
-    private val tvDetail: TextView
+    private val tvTemp: TextView
+    private val tvStatus: TextView
 
     init {
         LayoutInflater.from(context).inflate(R.layout.card_battery, this, true)
@@ -39,23 +41,28 @@ class BatteryCard @JvmOverloads constructor(
         
         ivIcon = findViewById(R.id.ivBatteryIcon)
         tvPercent = findViewById(R.id.tvBatteryPercent)
-        tvDetail = findViewById(R.id.tvBatteryDetail)
+        tvTemp = findViewById(R.id.tvBatteryTemp)
+        tvStatus = findViewById(R.id.tvBatteryStatus)
     }
 
     /**
      * Update the card with battery information.
      */
     fun update(battery: BatteryInfo) {
+        // Update percentage
         tvPercent.text = context.getString(R.string.dashboard_percent_format, battery.percent)
         
-        val statusText = buildString {
-            append(context.getString(R.string.dashboard_temp_format, battery.temperature))
-            if (battery.isCharging) {
-                append(" • ")
-                append(context.getString(R.string.dashboard_charging))
-            }
+        // Update temperature
+        tvTemp.text = context.getString(R.string.dashboard_temp_format, battery.temperature)
+        
+        // Update charging/discharging status
+        if (battery.isCharging) {
+            tvStatus.text = context.getString(R.string.dashboard_charging)
+            tvStatus.setTextColor(context.getColor(R.color.status_positive))
+        } else {
+            tvStatus.text = context.getString(R.string.dashboard_discharging)
+            tvStatus.setTextColor(context.getColor(R.color.on_surface_secondary))
         }
-        tvDetail.text = statusText
         
         // Update icon color based on battery level
         val iconTint = when {
@@ -72,7 +79,8 @@ class BatteryCard @JvmOverloads constructor(
     fun setLoading(loading: Boolean) {
         if (loading) {
             tvPercent.text = "--"
-            tvDetail.text = ""
+            tvTemp.text = ""
+            tvStatus.text = ""
         }
     }
 }

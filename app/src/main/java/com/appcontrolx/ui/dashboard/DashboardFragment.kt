@@ -202,14 +202,17 @@ class DashboardFragment : Fragment() {
     private fun updateBatteryCard(battery: BatteryInfo) {
         binding.tvBatteryPercent.text = getString(R.string.dashboard_percent_format, battery.percent)
         
-        val statusText = buildString {
-            append(getString(R.string.dashboard_temp_format, battery.temperature))
-            if (battery.isCharging) {
-                append(" • ")
-                append(getString(R.string.dashboard_charging))
-            }
+        // Update temperature
+        binding.tvBatteryTemp.text = getString(R.string.dashboard_temp_format, battery.temperature)
+        
+        // Update charging/discharging status
+        if (battery.isCharging) {
+            binding.tvBatteryStatus.text = getString(R.string.dashboard_charging)
+            binding.tvBatteryStatus.setTextColor(requireContext().getColor(R.color.status_positive))
+        } else {
+            binding.tvBatteryStatus.text = getString(R.string.dashboard_discharging)
+            binding.tvBatteryStatus.setTextColor(requireContext().getColor(R.color.on_surface_secondary))
         }
-        binding.tvBatteryTemp.text = statusText
         
         // Update battery icon color based on level
         val iconTint = when {
@@ -237,6 +240,22 @@ class DashboardFragment : Fragment() {
         }
         binding.tvNetworkDetail.text = detailText
         
+        // Show signal strength percentage if available
+        network.signalPercent?.let { percent ->
+            binding.tvSignalStrength.text = getString(R.string.dashboard_signal_strength, percent)
+            binding.tvSignalStrength.visibility = View.VISIBLE
+        } ?: run {
+            binding.tvSignalStrength.visibility = View.GONE
+        }
+        
+        // Show signal dBm if available
+        network.signalDbm?.let { dbm ->
+            binding.tvSignalDbm.text = getString(R.string.dashboard_signal_dbm, dbm)
+            binding.tvSignalDbm.visibility = View.VISIBLE
+        } ?: run {
+            binding.tvSignalDbm.visibility = View.GONE
+        }
+        
         // Update icon color based on connection status
         val iconTint = if (network.isConnected) R.color.status_positive else R.color.status_neutral
         binding.ivNetworkIcon.setColorFilter(requireContext().getColor(iconTint))
@@ -247,15 +266,29 @@ class DashboardFragment : Fragment() {
         val totalGb = bytesToGb(ram.totalBytes)
         val percent = ram.usedPercent.toInt()
         
-        binding.tvRamUsed.text = formatSize(ram.usedBytes)
-        binding.tvRamDetail.text = "of ${formatSize(ram.totalBytes)} • $percent%"
+        // Update circular progress
+        binding.progressRam.progress = percent
+        
+        // Update percentage text in center
+        binding.tvRamPercent.text = getString(R.string.dashboard_percent_format, percent)
+        
+        // Update used and total text
+        binding.tvRamUsed.text = getString(R.string.dashboard_used_format, formatSizeDetailed(ram.usedBytes))
+        binding.tvRamDetail.text = getString(R.string.dashboard_total_format, formatSizeDetailed(ram.totalBytes))
     }
 
     private fun updateStorageCard(storage: StorageInfo) {
         val percent = storage.usedPercent.toInt()
         
-        binding.tvStorageUsed.text = formatSize(storage.usedBytes)
-        binding.tvStorageDetail.text = "of ${formatSize(storage.totalBytes)} • $percent%"
+        // Update circular progress
+        binding.progressStorage.progress = percent
+        
+        // Update percentage text in center
+        binding.tvStoragePercent.text = getString(R.string.dashboard_percent_format, percent)
+        
+        // Update used and total text
+        binding.tvStorageUsed.text = getString(R.string.dashboard_used_format, formatSizeDetailed(storage.usedBytes))
+        binding.tvStorageDetail.text = getString(R.string.dashboard_total_format, formatSizeDetailed(storage.totalBytes))
     }
 
     private fun updateDisplayCard(display: DisplayInfo) {
@@ -272,18 +305,21 @@ class DashboardFragment : Fragment() {
             } ?: run {
                 binding.tvGpuVendor.visibility = View.GONE
             }
+            
+            // Also show GPU model in Display card
+            binding.tvDisplayGpu.text = gpu.model
+            binding.tvDisplayGpu.visibility = View.VISIBLE
         } else {
             binding.tvGpuModel.text = getString(R.string.dashboard_gpu_unavailable)
             binding.tvGpuVendor.visibility = View.GONE
+            binding.tvDisplayGpu.visibility = View.GONE
         }
     }
 
     private fun updateAppsCard(counts: AppCounts) {
-        binding.tvAppsCount.text = getString(
-            R.string.dashboard_apps_count,
-            counts.userApps,
-            counts.systemApps
-        )
+        binding.tvAppsTotal.text = getString(R.string.dashboard_apps_total, counts.total)
+        binding.tvAppsUser.text = getString(R.string.dashboard_apps_user, counts.userApps)
+        binding.tvAppsCount.text = getString(R.string.dashboard_apps_system, counts.systemApps)
     }
 
 
@@ -291,16 +327,34 @@ class DashboardFragment : Fragment() {
         // Device name
         binding.tvDeviceName.text = "${device.brand} ${device.model}"
         
-        // Android version
-        binding.tvAndroidVersion.text = "Android ${device.androidVersion} (API ${device.apiLevel})"
+        // SoC/Processor name
+        device.socName?.let { soc ->
+            binding.tvSoc.text = soc
+            binding.layoutSoc.visibility = View.VISIBLE
+        } ?: run {
+            binding.layoutSoc.visibility = View.GONE
+        }
+        
+        // Android version with codename
+        val androidText = if (device.androidCodename != null) {
+            "Android ${device.androidVersion} (${device.androidCodename})"
+        } else {
+            "Android ${device.androidVersion} (API ${device.apiLevel})"
+        }
+        binding.tvAndroidVersion.text = androidText
         
         // Uptime
         binding.tvUptime.text = formatDuration(device.uptimeMs)
         
-        // Deep sleep (only shown in Root mode)
+        // Deep sleep with percentage (only shown in Root mode)
         device.deepSleepMs?.let { deepSleep ->
             binding.layoutDeepSleep.visibility = View.VISIBLE
-            binding.tvDeepSleep.text = formatDuration(deepSleep)
+            val deepSleepPercent = if (device.uptimeMs > 0) {
+                ((deepSleep.toFloat() / device.uptimeMs) * 100).toInt()
+            } else {
+                0
+            }
+            binding.tvDeepSleep.text = "${formatDurationDetailed(deepSleep)} ($deepSleepPercent%)"
         } ?: run {
             binding.layoutDeepSleep.visibility = View.GONE
         }
@@ -327,6 +381,16 @@ class DashboardFragment : Fragment() {
             String.format("%.0f MB", mb)
         }
     }
+    
+    private fun formatSizeDetailed(bytes: Long): String {
+        val gb = bytes / (1024.0 * 1024.0 * 1024.0)
+        return if (gb >= 1) {
+            String.format("%.2f GB", gb)
+        } else {
+            val mb = bytes / (1024.0 * 1024.0)
+            String.format("%.0f MB", mb)
+        }
+    }
 
     private fun formatDuration(millis: Long): String {
         val days = TimeUnit.MILLISECONDS.toDays(millis)
@@ -337,6 +401,20 @@ class DashboardFragment : Fragment() {
             if (days > 0) append("${days}d ")
             if (hours > 0 || days > 0) append("${hours}h ")
             append("${minutes}m")
+        }.trim()
+    }
+    
+    private fun formatDurationDetailed(millis: Long): String {
+        val days = TimeUnit.MILLISECONDS.toDays(millis)
+        val hours = TimeUnit.MILLISECONDS.toHours(millis) % 24
+        val minutes = TimeUnit.MILLISECONDS.toMinutes(millis) % 60
+        val seconds = TimeUnit.MILLISECONDS.toSeconds(millis) % 60
+        
+        return buildString {
+            if (days > 0) append("${days}d ")
+            if (hours > 0 || days > 0) append("${hours}h ")
+            if (minutes > 0 || hours > 0 || days > 0) append("${minutes}m ")
+            append("${seconds}s")
         }.trim()
     }
 

@@ -64,6 +64,8 @@ data class NetworkInfo(
     val type: NetworkType,
     val isConnected: Boolean,
     val signalStrength: Int?,  // 0-4 bars, null if unavailable
+    val signalPercent: Int?,   // 0-100 percentage, null if unavailable
+    val signalDbm: Int?,       // Signal strength in dBm, null if unavailable
     val ssid: String?          // WiFi name, null if not WiFi
 )
 
@@ -96,11 +98,13 @@ data class DeviceInfo(
     val model: String,
     val device: String,
     val androidVersion: String,
+    val androidCodename: String?,  // e.g., "Baklava" for Android 16
     val apiLevel: Int,
     val buildNumber: String,
     val kernelVersion: String,
+    val socName: String?,          // SoC/processor name
     val uptimeMs: Long,
-    val deepSleepMs: Long?     // requires root
+    val deepSleepMs: Long?         // requires root
 )
 
 /**

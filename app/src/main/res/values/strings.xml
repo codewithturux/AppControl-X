@@ -32,6 +32,17 @@
     <string name="dashboard_percent_format">%d%%</string>
     <string name="dashboard_hz_format">%.0f Hz</string>
     <string name="dashboard_charging">Charging</string>
+    <string name="dashboard_discharging">Discharging</string>
+    <string name="dashboard_used_format">%s used</string>
+    <string name="dashboard_total_format">%s total</string>
+    <string name="dashboard_signal_strength">%d%%</string>
+    <string name="dashboard_signal_dbm">%d dBm</string>
+    <string name="dashboard_apps_total">%d Total</string>
+    <string name="dashboard_apps_user">%d User</string>
+    <string name="dashboard_apps_system">%d System</string>
+    <string name="dashboard_soc">SoC</string>
+    <string name="dashboard_deep_sleep_percent">Deep sleep: %1$s (%2$d%%)</string>
+    <string name="dashboard_android_codename">Android %1$s (%2$s)</string>
     
     <!-- Status strings -->
     <string name="status_available">Available</string>
@@ -145,6 +156,25 @@
     <string name="settings_select_refresh_rate">Select Refresh Rate</string>
     <string name="settings_refresh_rate_reset">Refresh rate reset to default</string>
     <string name="settings_refresh_rate_error">Failed to set refresh rate</string>
+    
+    <!-- Animation Scale Settings -->
+    <string name="settings_animation_scale">Animation Scale</string>
+    <string name="settings_animation_scale_desc">Control system animation speed</string>
+    <string name="settings_animation_scale_current">Current: %s</string>
+    <string name="settings_animation_scale_off">Off</string>
+    <string name="settings_animation_scale_custom">Custom</string>
+    <string name="settings_animation_scale_format">%.1fx</string>
+    <string name="settings_animation_scale_default">1x (Default)</string>
+    <string name="settings_animation_scale_disabled">Animation settings require Root or Shizuku mode</string>
+    <string name="settings_animation_scale_error">Failed to set animation scale</string>
+    <string name="settings_animation_scale_success">Animation scale updated</string>
+    <string name="settings_animation_scale_window">Window Animation</string>
+    <string name="settings_animation_scale_transition">Transition Animation</string>
+    <string name="settings_animation_scale_animator">Animator Duration</string>
+    <string name="settings_animation_scale_all">All Animations</string>
+    <string name="settings_animation_scale_select">Select Animation Scale</string>
+    <string name="settings_animation_scale_custom_title">Custom Scale</string>
+    <string name="settings_animation_scale_custom_desc">Set a custom animation scale (0.0 - 10.0)</string>
     <string name="settings_about">About</string>
     <string name="settings_version_format">Version %s</string>
     <string name="settings_execution">Execution</string>
@@ -173,6 +203,15 @@
     <string name="about_description">Control your apps, save your battery</string>
     <string name="about_current_mode">Current Mode</string>
     <string name="about_license">Licensed under GPL-3.0</string>
+    <string name="about_app_info_title">App Info</string>
+    <string name="about_version_label">Version</string>
+    <string name="about_build_label">Build Number</string>
+    <string name="about_target_sdk_label">Target SDK</string>
+    <string name="about_developer_title">Developer</string>
+    <string name="about_developer_name">risunCode</string>
+    <string name="about_developer_role">Open Source Developer</string>
+    <string name="about_developer_icon_desc">Developer avatar</string>
+    <string name="about_share_desc">Tell your friends about AppControlX</string>
     
     <!-- App List -->
     <string name="chip_user_apps">User Apps</string>
@@ -350,6 +389,7 @@
     <string name="a11y_launch_activity">Launch %s</string>
     <string name="a11y_app_frozen">App is frozen</string>
     <string name="a11y_app_running">App is running</string>
+    <string name="a11y_app_awakened">App is awake</string>
     <string name="a11y_app_stopped">App is stopped</string>
     <string name="a11y_bg_restricted">Background restricted</string>
     <string name="a11y_open_settings">Open settings</string>
@@ -383,9 +423,13 @@
     <!-- Status Badges -->
     <string name="badge_frozen">FROZEN</string>
     <string name="badge_running">RUNNING</string>
+    <string name="badge_awakened">AWAKE</string>
     <string name="badge_stopped">STOPPED</string>
-    <string name="badge_restricted">BACKGROUND RESTRICTED</string>
+    <string name="badge_restricted">RESTRICTED</string>
     <string name="badge_exported">EXPORTED</string>
+    
+    <!-- Accessibility for protected apps -->
+    <string name="a11y_protected_app">Protected system app</string>
     
     <!-- Status Filter -->
     <string name="filter_all">All</string>
@@ -394,6 +438,16 @@
     <string name="filter_frozen">Frozen</string>
     <string name="filter_restricted">Restricted</string>
     <string name="filter_status_title">Filter by Status</string>
+    
+    <!-- Filter/Sort Bottom Sheet -->
+    <string name="filter_sort_title">Filter &amp; Sort</string>
+    <string name="filter_section_title">Filter</string>
+    <string name="sort_section_title">Sort by</string>
+    <string name="sort_name_asc">Name (A-Z)</string>
+    <string name="sort_name_desc">Name (Z-A)</string>
+    <string name="sort_size">Size</string>
+    <string name="sort_updated">Last updated</string>
+    <string name="btn_apply">Apply</string>
     
     <!-- Mode Loss Dialog -->
     <string name="mode_loss_title_root">Root Access Lost</string>
@@ -436,4 +490,19 @@
     <string name="batch_countdown">Starting in %d...</string>
     <string name="btn_cancel">Cancel</string>
     <string name="status_negative">Failed</string>
+    
+    <!-- Action Logs Section -->
+    <string name="settings_action_logs">Action Logs</string>
+    <string name="settings_action_logs_view">View Action Logs</string>
+    <string name="settings_action_logs_view_desc">View history of performed actions</string>
+    <string name="settings_action_logs_rollback">Rollback Last Action</string>
+    <string name="settings_action_logs_rollback_desc">Undo the last batch action</string>
+    <string name="settings_action_logs_rollback_unavailable">No snapshot available</string>
+    <string name="settings_action_logs_clear">Clear Action Logs</string>
+    <string name="settings_action_logs_clear_desc">Delete all action history</string>
+    <string name="settings_action_logs_clear_confirm">Delete all action logs? This cannot be undone.</string>
+    <string name="settings_action_logs_cleared">Action logs cleared</string>
+    <string name="settings_rollback_confirm">Rollback the last action? This will restore apps to their previous state.</string>
+    <string name="settings_rollback_success">Rollback completed successfully</string>
+    <string name="settings_rollback_failed">Rollback failed: %s</string>
 </resources>

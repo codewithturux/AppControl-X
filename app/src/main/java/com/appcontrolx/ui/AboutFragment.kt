@@ -1,6 +1,7 @@
 package com.appcontrolx.ui
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -9,30 +10,20 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import com.appcontrolx.R
 import com.appcontrolx.databinding.FragmentAboutBinding
-import com.appcontrolx.domain.executor.PermissionBridge
-import com.appcontrolx.domain.manager.ActionLogger
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import javax.inject.Inject
 
 /**
- * About screen displaying app information, version, and links.
+ * About screen displaying app information with Material 3 design.
  * 
  * Displays:
- * - App name, version, and icon
- * - Current execution mode
- * - Device statistics (user apps, system apps, actions count)
- * - Device info (brand, model, Android version)
- * - Links to GitHub, bug reports, and share functionality
- * - Open source license information
- * - No personal branding prominently displayed
+ * - App icon, name, and version prominently in header
+ * - App Info section (Version, Build number, Target SDK)
+ * - Developer section
+ * - Links section (GitHub, Report issue, Star, Share)
  * 
- * Requirements: 10.2.1, 10.2.2, 10.2.3, 10.2.4, 10.2.5
+ * Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.7, 8.8
  */
 @AndroidEntryPoint
 class AboutFragment : Fragment() {
@@ -47,12 +38,6 @@ class AboutFragment : Fragment() {
     private var _binding: FragmentAboutBinding? = null
     private val binding get() = _binding!!
     
-    @Inject
-    lateinit var permissionBridge: PermissionBridge
-    
-    @Inject
-    lateinit var actionLogger: ActionLogger
-    
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -66,20 +51,19 @@ class AboutFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         
         setupAppInfo()
-        setupSystemInfo()
-        setupStats()
         setupLinks()
     }
     
     /**
-     * Setup app name, version, and current execution mode.
-     * Requirements: 10.2.1, 10.2.2
+     * Setup app version information in header and App Info card.
+     * Requirements: 8.1, 8.4, 8.5
      */
     private fun setupAppInfo() {
         try {
             val packageInfo = requireContext().packageManager
                 .getPackageInfo(requireContext().packageName, 0)
             
+            val versionName = packageInfo.versionName ?: "Unknown"
             val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 packageInfo.longVersionCode
             } else {
@@ -87,91 +71,42 @@ class AboutFragment : Fragment() {
                 packageInfo.versionCode.toLong()
             }
             
-            binding.tvVersion.text = getString(
-                R.string.about_version_format,
-                packageInfo.versionName,
-                versionCode
-            )
-        } catch (e: Exception) {
+            // Header version display
+            binding.tvVersion.text = getString(R.string.about_version_format, versionName, versionCode)
+            
+            // App Info card values
+            binding.tvVersionValue.text = versionName
+            binding.tvBuildValue.text = versionCode.toString()
+            
+            // Get target SDK from application info
+            val appInfo = requireContext().packageManager
+                .getApplicationInfo(requireContext().packageName, 0)
+            binding.tvTargetSdkValue.text = getString(R.string.detail_sdk_format, appInfo.targetSdkVersion)
+            
+        } catch (e: PackageManager.NameNotFoundException) {
             Log.e(TAG, "Failed to get package info", e)
             binding.tvVersion.text = getString(R.string.about_version_format, "Unknown", 0L)
-        }
-        
-        // Display current execution mode
-        binding.tvCurrentMode.text = permissionBridge.mode.displayName
-    }
-    
-    /**
-     * Setup device information section.
-     */
-    private fun setupSystemInfo() {
-        // Device brand and model
-        val manufacturer = Build.MANUFACTURER.replaceFirstChar { 
-            if (it.isLowerCase()) it.titlecase() else it.toString() 
-        }
-        binding.tvDeviceInfo.text = getString(
-            R.string.about_device_format,
-            manufacturer,
-            Build.MODEL
-        )
-        
-        // Android version and API level
-        binding.tvAndroidVersion.text = getString(
-            R.string.about_android_format,
-            Build.VERSION.RELEASE,
-            Build.VERSION.SDK_INT
-        )
-    }
-    
-    /**
-     * Setup statistics section (user apps, system apps, actions count).
-     */
-    private fun setupStats() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            val (userApps, systemApps, actionsCount) = withContext(Dispatchers.IO) {
-                val pm = requireContext().packageManager
-                val packages = pm.getInstalledPackages(0)
-                
-                var user = 0
-                var system = 0
-                
-                packages.forEach { pkg ->
-                    val isSystem = (pkg.applicationInfo?.flags 
-                        ?: 0) and android.content.pm.ApplicationInfo.FLAG_SYSTEM != 0
-                    if (isSystem) {
-                        system++
-                    } else {
-                        user++
-                    }
-                }
-                
-                // Get action count from ActionLogger
-                val actions = actionLogger.getActionHistory().size
-                
-                Triple(user, system, actions)
-            }
-            
-            binding.tvUserAppsCount.text = userApps.toString()
-            binding.tvSystemAppsCount.text = systemApps.toString()
-            binding.tvActionsCount.text = actionsCount.toString()
+            binding.tvVersionValue.text = "Unknown"
+            binding.tvBuildValue.text = "0"
+            binding.tvTargetSdkValue.text = "Unknown"
         }
     }
     
     /**
-     * Setup link buttons for GitHub, star, bug report, and share.
-     * Requirements: 10.2.3
+     * Setup link buttons for GitHub, bug report, star, and share.
+     * Requirements: 8.6
      */
     private fun setupLinks() {
         binding.btnGithub.setOnClickListener {
             openUrl(GITHUB_URL)
         }
         
-        binding.btnRate.setOnClickListener {
-            openUrl(GITHUB_STARS_URL)
-        }
-        
         binding.btnBugReport.setOnClickListener {
             openUrl(GITHUB_ISSUES_URL)
+        }
+        
+        binding.btnRate.setOnClickListener {
+            openUrl(GITHUB_STARS_URL)
         }
         
         binding.btnShare.setOnClickListener {

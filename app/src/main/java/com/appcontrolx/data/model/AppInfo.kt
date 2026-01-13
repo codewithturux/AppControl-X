@@ -15,6 +15,7 @@ enum class AppStatus {
 
 /**
  * Data class representing information about an installed application.
+ * Requirements: 5.1, 5.2, 4.6
  */
 data class AppInfo(
     val packageName: String,
@@ -28,7 +29,13 @@ data class AppInfo(
     val isStopped: Boolean,
     val isBackgroundRestricted: Boolean,
     val installedTime: Long,
-    val lastUpdateTime: Long
+    val lastUpdateTime: Long,
+    val size: Long = 0L,
+    /**
+     * The running state of the app detected via multi-method detection.
+     * Requirements: 4.6
+     */
+    val runningState: AppRunningState = AppRunningState.UNKNOWN
 ) {
     /**
      * Whether the app is frozen (disabled)

@@ -206,7 +206,17 @@
                         android:layout_height="wrap_content"
                         android:textSize="12sp"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        tools:text="32°C • Charging" />
+                        tools:text="32°C" />
+
+                    <TextView
+                        android:id="@+id/tvBatteryStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/status_positive"
+                        tools:text="Charging" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -267,6 +277,27 @@
                         android:ellipsize="end"
                         android:maxLines="1"
                         tools:text="MyNetwork" />
+
+                    <TextView
+                        android:id="@+id/tvSignalStrength"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textSize="12sp"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:visibility="gone"
+                        tools:visibility="visible"
+                        tools:text="100%" />
+
+                    <TextView
+                        android:id="@+id/tvSignalDbm"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="12sp"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:visibility="gone"
+                        tools:visibility="visible"
+                        tools:text="-42 dBm" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -307,23 +338,55 @@
                             android:textColor="?attr/colorOnSurfaceVariant" />
                     </LinearLayout>
 
+                    <!-- Circular progress with percentage in center -->
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:layout_gravity="center_horizontal">
+
+                        <ProgressBar
+                            android:id="@+id/progressRam"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="@dimen/circular_progress_size"
+                            android:layout_height="@dimen/circular_progress_size"
+                            android:layout_gravity="center"
+                            android:indeterminate="false"
+                            android:max="100"
+                            android:progress="0"
+                            android:progressDrawable="@drawable/circular_progress_ram"
+                            android:background="@drawable/circular_progress_background"
+                            android:rotation="-90" />
+
+                        <TextView
+                            android:id="@+id/tvRamPercent"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurface"
+                            tools:text="52%" />
+                    </FrameLayout>
+
                     <TextView
                         android:id="@+id/tvRamUsed"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/spacing_sm"
-                        android:textSize="24sp"
-                        android:textStyle="bold"
-                        android:textColor="?attr/colorOnSurface"
-                        tools:text="4.2 GB" />
+                        android:layout_gravity="center_horizontal"
+                        android:textSize="12sp"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        tools:text="4.20 GB used" />
 
                     <TextView
                         android:id="@+id/tvRamDetail"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
                         android:textSize="12sp"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        tools:text="of 8 GB • 52%" />
+                        tools:text="8.00 GB total" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -364,23 +427,55 @@
                             android:textColor="?attr/colorOnSurfaceVariant" />
                     </LinearLayout>
 
+                    <!-- Circular progress with percentage in center -->
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:layout_gravity="center_horizontal">
+
+                        <ProgressBar
+                            android:id="@+id/progressStorage"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="@dimen/circular_progress_size"
+                            android:layout_height="@dimen/circular_progress_size"
+                            android:layout_gravity="center"
+                            android:indeterminate="false"
+                            android:max="100"
+                            android:progress="0"
+                            android:progressDrawable="@drawable/circular_progress_storage"
+                            android:background="@drawable/circular_progress_background"
+                            android:rotation="-90" />
+
+                        <TextView
+                            android:id="@+id/tvStoragePercent"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorOnSurface"
+                            tools:text="50%" />
+                    </FrameLayout>
+
                     <TextView
                         android:id="@+id/tvStorageUsed"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/spacing_sm"
-                        android:textSize="24sp"
-                        android:textStyle="bold"
-                        android:textColor="?attr/colorOnSurface"
-                        tools:text="64 GB" />
+                        android:layout_gravity="center_horizontal"
+                        android:textSize="12sp"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        tools:text="64.00 GB used" />
 
                     <TextView
                         android:id="@+id/tvStorageDetail"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
                         android:textSize="12sp"
                         android:textColor="?attr/colorOnSurfaceVariant"
-                        tools:text="of 128 GB • 50%" />
+                        tools:text="128.00 GB total" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -438,6 +533,17 @@
                         android:textSize="12sp"
                         android:textColor="?attr/colorOnSurfaceVariant"
                         tools:text="120 Hz" />
+
+                    <TextView
+                        android:id="@+id/tvDisplayGpu"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textSize="12sp"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:visibility="gone"
+                        tools:visibility="visible"
+                        tools:text="Adreno 710" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -514,38 +620,57 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="@dimen/card_padding_large"
-                android:gravity="center_vertical">
+                android:orientation="vertical"
+                android:padding="@dimen/card_padding_large">
 
-                <ImageView
-                    android:layout_width="@dimen/card_icon_size_large"
-                    android:layout_height="@dimen/card_icon_size_large"
-                    android:src="@drawable/ic_apps"
-                    app:tint="?attr/colorPrimary"
-                    android:contentDescription="@string/dashboard_apps" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="@dimen/card_icon_size_large"
+                        android:layout_height="@dimen/card_icon_size_large"
+                        android:src="@drawable/ic_apps"
+                        app:tint="?attr/colorPrimary"
+                        android:contentDescription="@string/dashboard_apps" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_md"
+                        android:text="@string/dashboard_apps"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorOnSurface" />
+                </LinearLayout>
 
                 <TextView
+                    android:id="@+id/tvAppsTotal"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/spacing_md"
-                    android:text="@string/dashboard_apps"
-                    android:textSize="14sp"
+                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:textSize="24sp"
                     android:textStyle="bold"
-                    android:textColor="?attr/colorOnSurface" />
+                    android:textColor="?attr/colorOnSurface"
+                    tools:text="94 Total" />
 
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
+                <TextView
+                    android:id="@+id/tvAppsUser"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    tools:text="64 User" />
 
                 <TextView
                     android:id="@+id/tvAppsCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    tools:text="156 user • 245 system" />
+                    tools:text="30 System" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -858,6 +983,37 @@
                     android:layout_marginVertical="@dimen/spacing_md"
                     android:background="?attr/colorOutlineVariant" />
 
+                <!-- SoC / Processor -->
+                <LinearLayout
+                    android:id="@+id/layoutSoc"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="@dimen/spacing_sm"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/dashboard_soc"
+                        android:textSize="14sp"
+                        android:textColor="?attr/colorOnSurfaceVariant" />
+
+                    <TextView
+                        android:id="@+id/tvSoc"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1.5"
+                        android:textSize="14sp"
+                        android:textColor="?attr/colorOnSurface"
+                        android:gravity="end"
+                        android:ellipsize="end"
+                        android:maxLines="2"
+                        tools:text="Qualcomm® Snapdragon™ 7s Gen 2" />
+                </LinearLayout>
+
                 <!-- Android Version -->
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -879,7 +1035,7 @@
                         android:layout_height="wrap_content"
                         android:textSize="14sp"
                         android:textColor="?attr/colorOnSurface"
-                        tools:text="Android 13 (API 33)" />
+                        tools:text="Android 16 (Baklava)" />
                 </LinearLayout>
 
                 <!-- Uptime -->
@@ -906,7 +1062,7 @@
                         tools:text="2d 5h 32m" />
                 </LinearLayout>
 
-                <!-- Deep Sleep (only shown in Root mode) -->
+                <!-- Deep Sleep with percentage (only shown in Root mode) -->
                 <LinearLayout
                     android:id="@+id/layoutDeepSleep"
                     android:layout_width="match_parent"
@@ -930,7 +1086,7 @@
                         android:layout_height="wrap_content"
                         android:textSize="14sp"
                         android:textColor="?attr/colorOnSurface"
-                        tools:text="18h 45m" />
+                        tools:text="2d 3h 48m 8s (45%)" />
                 </LinearLayout>
 
                 <!-- Kernel Version -->

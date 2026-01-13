@@ -20,6 +20,11 @@
     <dimen name="card_icon_size_large">24dp</dimen>
     <dimen name="card_icon_size_feature">32dp</dimen>
     
+    <!-- Circular progress -->
+    <dimen name="circular_progress_size">80dp</dimen>
+    <dimen name="circular_progress_stroke">6dp</dimen>
+    <dimen name="overflow_menu_size">24dp</dimen>
+    
     <!-- Buttons -->
     <dimen name="button_corner_radius">24dp</dimen>
     

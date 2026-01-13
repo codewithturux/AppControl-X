@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.appcontrolx.R
+import com.appcontrolx.data.model.AnimationScale
 import com.appcontrolx.data.model.ExecutionMode
 import com.appcontrolx.databinding.FragmentSettingsBinding
 import com.appcontrolx.ui.history.ActionHistoryBottomSheet
@@ -113,6 +114,11 @@ class SettingsFragment : Fragment() {
             showResetRefreshRateConfirmation()
         }
         
+        // Animation scale
+        binding.itemAnimationScale.setOnClickListener {
+            showAnimationScaleDialog()
+        }
+        
         // Safety settings
         binding.switchConfirmActions.setOnCheckedChangeListener { _, isChecked ->
             viewModel.setConfirmActions(isChecked)
@@ -133,6 +139,19 @@ class SettingsFragment : Fragment() {
         
         binding.itemClearSnapshots.setOnClickListener {
             showClearSnapshotsConfirmation()
+        }
+        
+        // Action Logs section
+        binding.itemViewActionLogs.setOnClickListener {
+            showActionHistoryBottomSheet()
+        }
+        
+        binding.itemRollbackLastAction.setOnClickListener {
+            showRollbackConfirmation()
+        }
+        
+        binding.itemClearActionLogs.setOnClickListener {
+            showClearActionLogsConfirmation()
         }
         
         // About
@@ -188,6 +207,7 @@ class SettingsFragment : Fragment() {
         if (state.canControlDisplay) {
             binding.tvMinRefreshRate.text = getString(R.string.settings_refresh_rate_format, state.minRefreshRate)
             binding.tvMaxRefreshRate.text = getString(R.string.settings_refresh_rate_format, state.maxRefreshRate)
+            binding.tvAnimationScale.text = state.animationScale.getPresetName()
         }
         
         // Safety settings
@@ -198,6 +218,18 @@ class SettingsFragment : Fragment() {
         binding.switchAutoSnapshot.isChecked = state.autoSnapshot
         binding.tvLogCount.text = getString(R.string.settings_log_count, state.logCount)
         binding.tvSnapshotCount.text = getString(R.string.settings_snapshot_count, state.snapshotCount)
+        
+        // Action Logs section
+        binding.tvActionLogCount.text = getString(R.string.settings_log_count, state.logCount)
+        
+        // Rollback availability - disable if no snapshot available
+        binding.itemRollbackLastAction.isEnabled = state.rollbackAvailable
+        binding.itemRollbackLastAction.alpha = if (state.rollbackAvailable) 1.0f else 0.5f
+        binding.tvRollbackStatus.text = if (state.rollbackAvailable) {
+            getString(R.string.settings_action_logs_rollback_desc)
+        } else {
+            getString(R.string.settings_action_logs_rollback_unavailable)
+        }
         
         // App version
         binding.tvAppVersion.text = getString(R.string.settings_version_format, state.appVersion)
@@ -383,12 +415,100 @@ class SettingsFragment : Fragment() {
             .show()
     }
     
+    private fun showAnimationScaleDialog() {
+        val state = viewModel.uiState.value
+        val currentScale = state.animationScale.getUniformScale() ?: 1.0f
+        
+        // Build preset options with "Custom" at the end
+        val presetNames = AnimationScale.PRESETS.map { it.second }.toMutableList()
+        presetNames.add(getString(R.string.settings_animation_scale_custom))
+        
+        // Find current selection index
+        val currentIndex = AnimationScale.PRESETS.indexOfFirst { it.first == currentScale }
+            .let { if (it >= 0) it else presetNames.size - 1 } // Default to Custom if not found
+        
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.settings_animation_scale_select)
+            .setSingleChoiceItems(presetNames.toTypedArray(), currentIndex) { dialog, which ->
+                if (which < AnimationScale.PRESETS.size) {
+                    // Preset selected
+                    val selectedScale = AnimationScale.PRESETS[which].first
+                    viewModel.setAllAnimationScales(selectedScale)
+                    dialog.dismiss()
+                } else {
+                    // Custom selected
+                    dialog.dismiss()
+                    showCustomAnimationScaleDialog(currentScale)
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+    
+    private fun showCustomAnimationScaleDialog(currentScale: Float) {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_custom_animation_scale, null)
+        val slider = dialogView.findViewById<com.google.android.material.slider.Slider>(R.id.sliderAnimationScale)
+        val tvValue = dialogView.findViewById<android.widget.TextView>(R.id.tvScaleValue)
+        
+        slider.value = currentScale.coerceIn(AnimationScale.MIN_SCALE, AnimationScale.MAX_SCALE)
+        tvValue.text = getString(R.string.settings_animation_scale_format, slider.value)
+        
+        slider.addOnChangeListener { _, value, _ ->
+            tvValue.text = getString(R.string.settings_animation_scale_format, value)
+        }
+        
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.settings_animation_scale_custom_title)
+            .setView(dialogView)
+            .setPositiveButton(R.string.btn_apply) { _, _ ->
+                viewModel.setAllAnimationScales(slider.value)
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+    
     private fun showClearSnapshotsConfirmation() {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.settings_clear_snapshots)
             .setMessage(R.string.settings_clear_snapshots_confirm)
             .setPositiveButton(R.string.confirm_yes) { _, _ ->
                 viewModel.clearSnapshots()
+            }
+            .setNegativeButton(R.string.confirm_no, null)
+            .show()
+    }
+    
+    /**
+     * Show confirmation dialog before executing rollback.
+     * Requirements: 6.4 - Execute rollbackLastAction()
+     */
+    private fun showRollbackConfirmation() {
+        // Check if rollback is available
+        if (!viewModel.uiState.value.rollbackAvailable) {
+            Toast.makeText(context, R.string.settings_action_logs_rollback_unavailable, Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.log_rollback_title)
+            .setMessage(R.string.settings_rollback_confirm)
+            .setPositiveButton(R.string.confirm_yes) { _, _ ->
+                viewModel.rollbackLastAction()
+            }
+            .setNegativeButton(R.string.confirm_no, null)
+            .show()
+    }
+    
+    /**
+     * Show confirmation dialog before clearing action logs.
+     * Requirements: 6.2 - Clear Action Logs option
+     */
+    private fun showClearActionLogsConfirmation() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.settings_action_logs_clear)
+            .setMessage(R.string.settings_action_logs_clear_confirm)
+            .setPositiveButton(R.string.confirm_yes) { _, _ ->
+                viewModel.clearActionLogs()
             }
             .setNegativeButton(R.string.confirm_no, null)
             .show()
@@ -434,6 +554,10 @@ class SettingsFragment : Fragment() {
         val bottomSheet = ActionHistoryBottomSheet.newInstance()
         bottomSheet.onLogCleared = {
             // Refresh log count when logs are cleared
+            viewModel.refreshLogCount()
+        }
+        bottomSheet.onRollbackExecuted = {
+            // Refresh state when rollback is executed from bottom sheet
             viewModel.refreshLogCount()
         }
         bottomSheet.show(childFragmentManager, ActionHistoryBottomSheet.TAG)

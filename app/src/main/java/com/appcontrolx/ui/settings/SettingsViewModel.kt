@@ -5,9 +5,11 @@ import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.appcontrolx.data.model.AnimationScale
 import com.appcontrolx.data.model.ExecutionMode
 import com.appcontrolx.domain.executor.PermissionBridge
 import com.appcontrolx.domain.manager.ActionLogger
+import com.appcontrolx.domain.manager.AnimationScaleManager
 import com.appcontrolx.domain.manager.DisplayManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -41,7 +43,8 @@ class SettingsViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val permissionBridge: PermissionBridge,
     private val displayManager: DisplayManager,
-    private val actionLogger: ActionLogger
+    private val actionLogger: ActionLogger,
+    private val animationScaleManager: AnimationScaleManager
 ) : ViewModel() {
     
     companion object {
@@ -103,6 +106,15 @@ class SettingsViewModel @Inject constructor(
                 maxRefreshRate = displayManager.getMaxRefreshRate().getOrNull() ?: supportedRates.maxOrNull() ?: 60f
             }
             
+            // Load animation scale settings if mode allows
+            var animationScale = AnimationScale.DEFAULT
+            if (canControlDisplay) {
+                animationScale = animationScaleManager.getAllAnimationScales().getOrNull() ?: AnimationScale.DEFAULT
+            }
+            
+            // Check if rollback is available
+            val rollbackAvailable = actionLogger.hasRollbackAvailable()
+            
             // Get app version
             val appVersion = try {
                 context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "Unknown"
@@ -125,7 +137,9 @@ class SettingsViewModel @Inject constructor(
                     minRefreshRate = minRefreshRate,
                     maxRefreshRate = maxRefreshRate,
                     supportedRefreshRates = supportedRates,
-                    appVersion = appVersion
+                    appVersion = appVersion,
+                    animationScale = animationScale,
+                    rollbackAvailable = rollbackAvailable
                 )
             }
         }
@@ -233,6 +247,33 @@ class SettingsViewModel @Inject constructor(
     }
     
     /**
+     * Set all animation scales to the same value.
+     * Requirements: 7.4
+     */
+    fun setAllAnimationScales(scale: Float) {
+        viewModelScope.launch {
+            val result = animationScaleManager.setAllAnimationScales(scale)
+            if (result.isSuccess) {
+                val newScale = AnimationScale.uniform(scale)
+                _uiState.update { it.copy(animationScale = newScale) }
+                _events.emit(SettingsEvent.ShowMessage("Animation scale updated"))
+            } else {
+                _events.emit(SettingsEvent.ShowError(result.exceptionOrNull()?.message ?: "Failed to set animation scale"))
+            }
+        }
+    }
+    
+    /**
+     * Refresh animation scale values from system.
+     */
+    fun refreshAnimationScale() {
+        viewModelScope.launch {
+            val scale = animationScaleManager.getAllAnimationScales().getOrNull() ?: AnimationScale.DEFAULT
+            _uiState.update { it.copy(animationScale = scale) }
+        }
+    }
+    
+    /**
      * Clear all snapshots.
      */
     fun clearSnapshots() {
@@ -250,7 +291,42 @@ class SettingsViewModel @Inject constructor(
     fun refreshLogCount() {
         viewModelScope.launch {
             val logCount = actionLogger.getActionHistory().size
-            _uiState.update { it.copy(logCount = logCount) }
+            val rollbackAvailable = actionLogger.hasRollbackAvailable()
+            _uiState.update { it.copy(logCount = logCount, rollbackAvailable = rollbackAvailable) }
+        }
+    }
+    
+    /**
+     * Rollback the last batch action.
+     * Requirements: 6.4 - Execute rollbackLastAction()
+     */
+    fun rollbackLastAction() {
+        viewModelScope.launch {
+            val result = actionLogger.rollbackLastAction()
+            result.fold(
+                onSuccess = {
+                    _events.emit(SettingsEvent.ShowMessage("Rollback completed successfully"))
+                    // Refresh state after rollback
+                    val logCount = actionLogger.getActionHistory().size
+                    val rollbackAvailable = actionLogger.hasRollbackAvailable()
+                    _uiState.update { it.copy(logCount = logCount, rollbackAvailable = rollbackAvailable) }
+                },
+                onFailure = { error ->
+                    _events.emit(SettingsEvent.ShowError("Rollback failed: ${error.message}"))
+                }
+            )
+        }
+    }
+    
+    /**
+     * Clear all action logs.
+     * Requirements: 6.2 - Clear Action Logs option
+     */
+    fun clearActionLogs() {
+        viewModelScope.launch {
+            actionLogger.clearHistory()
+            _uiState.update { it.copy(logCount = 0) }
+            _events.emit(SettingsEvent.ShowMessage("Action logs cleared"))
         }
     }
     
@@ -328,7 +404,9 @@ data class SettingsUiState(
     val minRefreshRate: Float = 60f,
     val maxRefreshRate: Float = 60f,
     val supportedRefreshRates: List<Float> = listOf(60f),
-    val appVersion: String = ""
+    val appVersion: String = "",
+    val animationScale: AnimationScale = AnimationScale.DEFAULT,
+    val rollbackAvailable: Boolean = false
 ) {
     val themeDisplayName: String
         get() = when (theme) {

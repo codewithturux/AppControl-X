@@ -8,8 +8,11 @@ import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.appcontrolx.data.model.AppInfo
+import com.appcontrolx.data.model.AppListFilter
 import com.appcontrolx.data.model.AppStatus
 import com.appcontrolx.data.model.ExecutionMode
+import com.appcontrolx.data.model.FilterType
+import com.appcontrolx.data.model.SortType
 import com.appcontrolx.domain.executor.CommandExecutor
 import com.appcontrolx.domain.executor.PermissionBridge
 import com.appcontrolx.domain.executor.RootExecutor
@@ -29,9 +32,9 @@ import javax.inject.Inject
 
 /**
  * ViewModel for AppListFragment.
- * Handles app loading, filtering, and selection state.
+ * Handles app loading, filtering, sorting, and selection state.
  * 
- * Requirements: 8.3, 8.4, 8.5, 8.6
+ * Requirements: 3.6, 3.7, 3.8
  */
 @HiltViewModel
 class AppListViewModel @Inject constructor(
@@ -46,8 +49,7 @@ class AppListViewModel @Inject constructor(
     val uiState: StateFlow<AppListUiState> = _uiState.asStateFlow()
 
     // Cache for apps
-    private var cachedUserApps: List<AppInfo>? = null
-    private var cachedSystemApps: List<AppInfo>? = null
+    private var cachedApps: List<AppInfo>? = null
 
     // Package change receiver
     private var packageReceiver: BroadcastReceiver? = null
@@ -78,19 +80,15 @@ class AppListViewModel @Inject constructor(
         }
     }
 
-
     /**
      * Load apps from scanner.
      * Uses cache if available.
      */
     fun loadApps(forceRefresh: Boolean = false) {
-        val currentState = _uiState.value
-        
         // Check cache first
-        val cachedApps = if (currentState.showSystemApps) cachedSystemApps else cachedUserApps
         if (!forceRefresh && cachedApps != null) {
-            _uiState.update { it.copy(allApps = cachedApps) }
-            applyFilters()
+            _uiState.update { it.copy(allApps = cachedApps!!) }
+            applyFiltersAndSort()
             return
         }
         
@@ -100,23 +98,15 @@ class AppListViewModel @Inject constructor(
             try {
                 val apps = withTimeout(LOAD_TIMEOUT_MS) {
                     withContext(Dispatchers.IO) {
-                        if (currentState.showSystemApps) {
-                            appScanner.scanSystemApps()
-                        } else {
-                            appScanner.scanUserApps()
-                        }
+                        appScanner.scanAllApps()
                     }
                 }
                 
                 // Cache results
-                if (currentState.showSystemApps) {
-                    cachedSystemApps = apps
-                } else {
-                    cachedUserApps = apps
-                }
+                cachedApps = apps
                 
                 _uiState.update { it.copy(allApps = apps, isLoading = false) }
-                applyFilters()
+                applyFiltersAndSort()
                 
             } catch (e: Exception) {
                 _uiState.update { 
@@ -138,27 +128,18 @@ class AppListViewModel @Inject constructor(
         
         viewModelScope.launch {
             try {
-                val currentState = _uiState.value
                 val apps = withTimeout(LOAD_TIMEOUT_MS) {
                     withContext(Dispatchers.IO) {
                         appScanner.clearCache()
-                        if (currentState.showSystemApps) {
-                            appScanner.scanSystemApps()
-                        } else {
-                            appScanner.scanUserApps()
-                        }
+                        appScanner.scanAllApps()
                     }
                 }
                 
                 // Cache results
-                if (currentState.showSystemApps) {
-                    cachedSystemApps = apps
-                } else {
-                    cachedUserApps = apps
-                }
+                cachedApps = apps
                 
                 _uiState.update { it.copy(allApps = apps, isRefreshing = false, error = null) }
-                applyFilters()
+                applyFiltersAndSort()
                 
             } catch (e: Exception) {
                 _uiState.update { 
@@ -173,29 +154,20 @@ class AppListViewModel @Inject constructor(
 
     /**
      * Handle search query change.
-     * Requirement: 8.3
+     * Requirement: 3.1
      */
     fun onSearchQueryChanged(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
-        applyFilters()
+        applyFiltersAndSort()
     }
 
     /**
-     * Handle system/user apps toggle.
-     * Requirement: 8.5
+     * Handle filter/sort change from FilterSortBottomSheet.
+     * Requirements: 3.6, 3.7, 3.8
      */
-    fun onShowSystemAppsChanged(showSystem: Boolean) {
-        _uiState.update { it.copy(showSystemApps = showSystem, selectedCount = 0) }
-        loadApps()
-    }
-
-    /**
-     * Handle status filter change.
-     * Requirement: 8.4
-     */
-    fun onStatusFilterChanged(filter: StatusFilter) {
-        _uiState.update { it.copy(statusFilter = filter) }
-        applyFilters()
+    fun onFilterSortChanged(filter: AppListFilter) {
+        _uiState.update { it.copy(appListFilter = filter) }
+        applyFiltersAndSort()
     }
 
     /**
@@ -205,42 +177,71 @@ class AppListViewModel @Inject constructor(
         _uiState.update { it.copy(selectedCount = count) }
     }
 
+    /**
+     * Filter apps based on the current filter type.
+     * Requirement: 3.6
+     * 
+     * @param apps List of apps to filter
+     * @param filterType The filter type to apply
+     * @return Filtered list of apps
+     */
+    fun filterApps(apps: List<AppInfo>, filterType: FilterType): List<AppInfo> {
+        return when (filterType) {
+            FilterType.ALL -> apps
+            FilterType.RUNNING -> apps.filter { it.status == AppStatus.RUNNING }
+            FilterType.FROZEN -> apps.filter { it.status == AppStatus.FROZEN }
+            FilterType.RESTRICTED -> apps.filter { it.status == AppStatus.RESTRICTED }
+        }
+    }
 
     /**
-     * Apply search and status filters to the app list.
-     * Requirements: 8.3, 8.4
+     * Sort apps based on the current sort type.
+     * Requirement: 3.7
+     * 
+     * @param apps List of apps to sort
+     * @param sortType The sort type to apply
+     * @return Sorted list of apps
      */
-    private fun applyFilters() {
-        val currentState = _uiState.value
-        var filtered = currentState.allApps
-        
-        // Apply status filter
-        filtered = when (currentState.statusFilter) {
-            StatusFilter.ALL -> filtered
-            StatusFilter.RUNNING -> filtered.filter { it.status == AppStatus.RUNNING }
-            StatusFilter.STOPPED -> filtered.filter { it.status == AppStatus.STOPPED }
-            StatusFilter.FROZEN -> filtered.filter { it.status == AppStatus.FROZEN }
-            StatusFilter.RESTRICTED -> filtered.filter { it.status == AppStatus.RESTRICTED }
+    fun sortApps(apps: List<AppInfo>, sortType: SortType): List<AppInfo> {
+        return when (sortType) {
+            SortType.NAME_ASC -> apps.sortedBy { it.appName.lowercase() }
+            SortType.NAME_DESC -> apps.sortedByDescending { it.appName.lowercase() }
+            SortType.SIZE_DESC -> apps.sortedByDescending { it.size }
+            SortType.UPDATED_DESC -> apps.sortedByDescending { it.lastUpdateTime }
         }
+    }
+
+    /**
+     * Apply search, filter, and sort to the app list.
+     * Requirements: 3.6, 3.7
+     */
+    private fun applyFiltersAndSort() {
+        val currentState = _uiState.value
+        var result = currentState.allApps
+        
+        // Apply filter
+        result = filterApps(result, currentState.appListFilter.filterType)
         
         // Apply search filter
         if (currentState.searchQuery.isNotBlank()) {
             val query = currentState.searchQuery.lowercase()
-            filtered = filtered.filter { app ->
+            result = result.filter { app ->
                 app.appName.lowercase().contains(query) ||
                 app.packageName.lowercase().contains(query)
             }
         }
         
-        _uiState.update { it.copy(filteredApps = filtered) }
+        // Apply sort
+        result = sortApps(result, currentState.appListFilter.sortType)
+        
+        _uiState.update { it.copy(filteredApps = result) }
     }
 
     /**
      * Clear cached apps.
      */
     private fun clearCache() {
-        cachedUserApps = null
-        cachedSystemApps = null
+        cachedApps = null
     }
 
     /**

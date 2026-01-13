@@ -1,172 +1,222 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
     android:padding="@dimen/card_padding_large">
 
-    <!-- Device Name Header -->
+    <!-- Overflow menu icon at top-right -->
+    <ImageView
+        android:id="@+id/ivOverflowMenu"
+        android:layout_width="@dimen/overflow_menu_size"
+        android:layout_height="@dimen/overflow_menu_size"
+        android:layout_gravity="top|end"
+        android:src="@drawable/ic_more_vert"
+        app:tint="@color/on_surface_secondary"
+        android:contentDescription="@string/a11y_expand_more"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="2dp" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:orientation="vertical">
 
-        <ImageView
-            android:layout_width="@dimen/card_icon_size_large"
-            android:layout_height="@dimen/card_icon_size_large"
-            android:src="@drawable/ic_smartphone"
-            app:tint="?attr/colorPrimary"
-            android:contentDescription="@string/dashboard_device" />
-
-        <TextView
-            android:id="@+id/tvDeviceName"
-            android:layout_width="wrap_content"
+        <!-- Device Name Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="?attr/colorOnSurface"
-            tools:text="Xiaomi Redmi Note 11 Pro" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginEnd="28dp">
+
+            <ImageView
+                android:layout_width="@dimen/card_icon_size_large"
+                android:layout_height="@dimen/card_icon_size_large"
+                android:src="@drawable/ic_smartphone"
+                app:tint="?attr/colorPrimary"
+                android:contentDescription="@string/dashboard_device" />
+
+            <TextView
+                android:id="@+id/tvDeviceName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="?attr/colorOnSurface"
+                tools:text="Xiaomi Redmi Note 11 Pro" />
+        </LinearLayout>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginVertical="12dp"
+            android:background="@color/outline" />
+
+        <!-- SoC / Processor -->
+        <LinearLayout
+            android:id="@+id/layoutSoc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/dashboard_soc"
+                android:textSize="14sp"
+                android:textColor="@color/on_surface_secondary" />
+
+            <TextView
+                android:id="@+id/tvSoc"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1.5"
+                android:textSize="14sp"
+                android:textColor="?attr/colorOnSurface"
+                android:gravity="end"
+                android:ellipsize="end"
+                android:maxLines="2"
+                tools:text="Qualcomm® Snapdragon™ 7s Gen 2" />
+        </LinearLayout>
+
+        <!-- Android Version with codename -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/dashboard_android"
+                android:textSize="14sp"
+                android:textColor="@color/on_surface_secondary" />
+
+            <TextView
+                android:id="@+id/tvAndroidVersion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="?attr/colorOnSurface"
+                tools:text="Android 16 (Baklava)" />
+        </LinearLayout>
+
+        <!-- Uptime -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/dashboard_uptime"
+                android:textSize="14sp"
+                android:textColor="@color/on_surface_secondary" />
+
+            <TextView
+                android:id="@+id/tvUptime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="?attr/colorOnSurface"
+                tools:text="2d 5h 32m" />
+        </LinearLayout>
+
+        <!-- Deep Sleep with percentage (Root mode only) -->
+        <LinearLayout
+            android:id="@+id/layoutDeepSleep"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/dashboard_deep_sleep"
+                android:textSize="14sp"
+                android:textColor="@color/on_surface_secondary" />
+
+            <TextView
+                android:id="@+id/tvDeepSleep"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="?attr/colorOnSurface"
+                tools:text="2d 3h 48m 8s (45%)" />
+        </LinearLayout>
+
+        <!-- Kernel Version -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/dashboard_kernel"
+                android:textSize="14sp"
+                android:textColor="@color/on_surface_secondary" />
+
+            <TextView
+                android:id="@+id/tvKernel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="14sp"
+                android:textColor="?attr/colorOnSurface"
+                android:gravity="end"
+                android:ellipsize="end"
+                android:maxLines="1"
+                tools:text="5.4.147-android12" />
+        </LinearLayout>
+
+        <!-- Build Number -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/dashboard_build"
+                android:textSize="14sp"
+                android:textColor="@color/on_surface_secondary" />
+
+            <TextView
+                android:id="@+id/tvBuild"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="14sp"
+                android:textColor="?attr/colorOnSurface"
+                android:gravity="end"
+                android:ellipsize="end"
+                android:maxLines="1"
+                tools:text="MIUI 14.0.5" />
+        </LinearLayout>
+
     </LinearLayout>
 
-    <!-- Divider -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginVertical="12dp"
-        android:background="@color/outline" />
-
-    <!-- Android Version -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="8dp">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/dashboard_android"
-            android:textSize="14sp"
-            android:textColor="@color/on_surface_secondary" />
-
-        <TextView
-            android:id="@+id/tvAndroidVersion"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:textColor="?attr/colorOnSurface"
-            tools:text="Android 13 (API 33)" />
-    </LinearLayout>
-
-    <!-- Uptime -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="8dp">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/dashboard_uptime"
-            android:textSize="14sp"
-            android:textColor="@color/on_surface_secondary" />
-
-        <TextView
-            android:id="@+id/tvUptime"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:textColor="?attr/colorOnSurface"
-            tools:text="2d 5h 32m" />
-    </LinearLayout>
-
-    <!-- Deep Sleep (Root mode only) -->
-    <LinearLayout
-        android:id="@+id/layoutDeepSleep"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="8dp"
-        android:visibility="gone"
-        tools:visibility="visible">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/dashboard_deep_sleep"
-            android:textSize="14sp"
-            android:textColor="@color/on_surface_secondary" />
-
-        <TextView
-            android:id="@+id/tvDeepSleep"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:textColor="?attr/colorOnSurface"
-            tools:text="18h 45m" />
-    </LinearLayout>
-
-    <!-- Kernel Version -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="8dp">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/dashboard_kernel"
-            android:textSize="14sp"
-            android:textColor="@color/on_surface_secondary" />
-
-        <TextView
-            android:id="@+id/tvKernel"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textSize="14sp"
-            android:textColor="?attr/colorOnSurface"
-            android:gravity="end"
-            android:ellipsize="end"
-            android:maxLines="1"
-            tools:text="5.4.147-android12" />
-    </LinearLayout>
-
-    <!-- Build Number -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/dashboard_build"
-            android:textSize="14sp"
-            android:textColor="@color/on_surface_secondary" />
-
-        <TextView
-            android:id="@+id/tvBuild"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textSize="14sp"
-            android:textColor="?attr/colorOnSurface"
-            android:gravity="end"
-            android:ellipsize="end"
-            android:maxLines="1"
-            tools:text="MIUI 14.0.5" />
-    </LinearLayout>
-
-</LinearLayout>
+</FrameLayout>

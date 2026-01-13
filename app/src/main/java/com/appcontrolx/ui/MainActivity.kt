@@ -2,20 +2,21 @@ package com.appcontrolx.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.setupWithNavController
 import com.appcontrolx.R
 import com.appcontrolx.databinding.ActivityMainBinding
 import com.appcontrolx.domain.manager.ModeLossAction
 import com.appcontrolx.domain.manager.ModeStatus
 import com.appcontrolx.domain.manager.ModeWatcher
 import com.appcontrolx.ui.components.ModeLossDialog
+import com.appcontrolx.ui.history.ActionHistoryBottomSheet
 import com.appcontrolx.ui.setup.SetupActivity
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.tabs.TabLayoutMediator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -23,10 +24,14 @@ import javax.inject.Inject
 /**
  * Main activity for the app after setup is complete.
  * 
- * Contains the Dashboard and navigation to other screens.
- * Integrates ModeWatcher to detect and handle execution mode loss.
+ * Contains TabLayout with ViewPager2 for Dashboard and Apps tabs.
+ * Overflow menu provides access to Settings, Action Logs, and About.
  * 
- * Requirement 0.8: Skip Setup_Wizard and show Dashboard directly when setup is complete.
+ * Requirement 1.1: Header with app icon, title, and overflow menu
+ * Requirement 1.3: TabLayout with Dashboard and Apps tabs
+ * Requirement 1.4, 1.5: Tab switching via tap and swipe
+ * Requirement 1.6: Active tab indicator
+ * Requirement 1.7: No bottom navigation bar
  * Requirements 10.1.1, 10.1.2, 10.1.3: Observe mode status on resume and show dialog when mode lost.
  */
 @AndroidEntryPoint
@@ -44,7 +49,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         
         // Defensive check: Redirect to SetupActivity if setup is not complete
-        // This handles edge cases like deep links or direct activity launches
         if (!SetupActivity.isSetupComplete(this)) {
             startActivity(Intent(this, SetupActivity::class.java))
             finish()
@@ -54,7 +58,8 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
-        setupNavigation()
+        setupToolbar()
+        setupViewPagerWithTabs()
         observeModeStatus()
     }
     
@@ -64,12 +69,101 @@ class MainActivity : AppCompatActivity() {
         verifyModeOnResume()
     }
     
-    private fun setupNavigation() {
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        val navController = navHostFragment.navController
+    /**
+     * Setup toolbar with overflow menu.
+     * Requirement 1.1: Header with app icon, title, and overflow menu
+     * Requirement 2.1-2.5: Overflow menu items
+     */
+    private fun setupToolbar() {
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(true)
         
-        binding.bottomNavigation.setupWithNavController(navController)
+        binding.toolbar.setOnMenuItemClickListener { menuItem ->
+            handleMenuItemClick(menuItem)
+        }
+    }
+    
+    /**
+     * Setup ViewPager2 with TabLayout using TabLayoutMediator.
+     * Requirements 1.3, 1.4, 1.5, 1.6
+     */
+    private fun setupViewPagerWithTabs() {
+        val pagerAdapter = MainPagerAdapter(this)
+        binding.viewPager.adapter = pagerAdapter
+        
+        // Connect TabLayout with ViewPager2
+        TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
+            tab.text = when (position) {
+                MainPagerAdapter.POSITION_DASHBOARD -> getString(R.string.nav_dashboard)
+                MainPagerAdapter.POSITION_APPS -> getString(R.string.nav_apps)
+                else -> ""
+            }
+        }.attach()
+    }
+    
+    /**
+     * Handle overflow menu item clicks.
+     * Requirements 2.3, 2.4, 2.5
+     */
+    private fun handleMenuItemClick(menuItem: MenuItem): Boolean {
+        return when (menuItem.itemId) {
+            R.id.action_settings -> {
+                navigateToSettings()
+                true
+            }
+            R.id.action_logs -> {
+                showActionHistoryBottomSheet()
+                true
+            }
+            R.id.action_about -> {
+                navigateToAbout()
+                true
+            }
+            else -> false
+        }
+    }
+    
+    /**
+     * Navigate to Settings screen.
+     * Requirement 2.3
+     */
+    private fun navigateToSettings() {
+        supportFragmentManager.beginTransaction()
+            .setCustomAnimations(
+                android.R.anim.fade_in,
+                android.R.anim.fade_out,
+                android.R.anim.fade_in,
+                android.R.anim.fade_out
+            )
+            .replace(android.R.id.content, com.appcontrolx.ui.settings.SettingsFragment())
+            .addToBackStack("settings")
+            .commit()
+    }
+    
+    /**
+     * Show Action History bottom sheet.
+     * Requirement 2.4
+     */
+    private fun showActionHistoryBottomSheet() {
+        ActionHistoryBottomSheet.newInstance()
+            .show(supportFragmentManager, ActionHistoryBottomSheet.TAG)
+    }
+    
+    /**
+     * Navigate to About screen.
+     * Requirement 2.5
+     */
+    private fun navigateToAbout() {
+        supportFragmentManager.beginTransaction()
+            .setCustomAnimations(
+                android.R.anim.fade_in,
+                android.R.anim.fade_out,
+                android.R.anim.fade_in,
+                android.R.anim.fade_out
+            )
+            .replace(android.R.id.content, AboutFragment())
+            .addToBackStack("about")
+            .commit()
     }
     
     /**
@@ -159,7 +253,6 @@ class MainActivity : AppCompatActivity() {
                 
                 ModeLossAction.SWITCH_MODE -> {
                     // Requirement 10.1.6: Navigate to mode selection screen
-                    // Reset setup and restart SetupActivity to allow mode re-selection
                     SetupActivity.resetSetup(this@MainActivity)
                     startActivity(Intent(this@MainActivity, SetupActivity::class.java).apply {
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
