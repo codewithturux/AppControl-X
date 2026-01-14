@@ -9,6 +9,8 @@ import com.appcontrolx.domain.executor.ShizukuExecutor
 import com.appcontrolx.domain.manager.ActionLogger
 import com.appcontrolx.domain.manager.AnimationScaleManager
 import com.appcontrolx.domain.manager.AnimationScaleManagerImpl
+import com.appcontrolx.domain.manager.AppControlManager
+import com.appcontrolx.domain.manager.BatteryManager
 import com.appcontrolx.domain.manager.DisplayManager
 import dagger.Module
 import dagger.Provides
@@ -107,4 +109,24 @@ object ExecutorModule {
     fun provideAnimationScaleManager(
         commandExecutor: CommandExecutor
     ): AnimationScaleManager = AnimationScaleManagerImpl(commandExecutor)
+    
+    /**
+     * Provides AppControlManager for app control actions (freeze, unfreeze, force-stop, etc.).
+     * Requirements: 2.1, 2.2, 2.3, 2.4
+     */
+    @Provides
+    @Singleton
+    fun provideAppControlManager(
+        commandExecutor: CommandExecutor
+    ): AppControlManager = AppControlManager(commandExecutor)
+    
+    /**
+     * Provides BatteryManager for background restriction control.
+     * Requirements: 4.1, 4.2
+     */
+    @Provides
+    @Singleton
+    fun provideBatteryManager(
+        commandExecutor: CommandExecutor
+    ): BatteryManager = BatteryManager(commandExecutor)
 }

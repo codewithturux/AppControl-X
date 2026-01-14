@@ -12,12 +12,13 @@ import com.google.android.material.card.MaterialCardView
  * Card component displaying installed app counts with user/system breakdown.
  * 
  * Features:
- * - Total apps count (prominent)
- * - User apps count
- * - System apps count
- * - DevCheck-style design
+ * - Total apps count (prominent, large text)
+ * - User | System breakdown in single line
+ * - Click ripple effect
+ * - Click listener to navigate to Apps tab
  * 
- * Requirements: 0.1.8 - Apps card showing total user apps and system apps count
+ * Requirements: 4.1, 4.2, 4.4 - Apps card showing total count prominently,
+ * breakdown display, and navigation to Apps tab on click
  */
 class AppsCard @JvmOverloads constructor(
     context: Context,
@@ -26,8 +27,13 @@ class AppsCard @JvmOverloads constructor(
 ) : MaterialCardView(context, attrs, defStyleAttr) {
 
     private val tvTotal: TextView
-    private val tvUser: TextView
-    private val tvSystem: TextView
+    private val tvBreakdown: TextView
+    
+    /**
+     * Callback for when the card is clicked.
+     * Used to navigate to the Apps tab.
+     */
+    var onCardClickListener: (() -> Unit)? = null
 
     init {
         LayoutInflater.from(context).inflate(R.layout.card_apps, this, true)
@@ -37,17 +43,28 @@ class AppsCard @JvmOverloads constructor(
         setCardBackgroundColor(context.getColor(R.color.surface))
         
         tvTotal = findViewById(R.id.tvAppsTotal)
-        tvUser = findViewById(R.id.tvAppsUser)
-        tvSystem = findViewById(R.id.tvAppsSystem)
+        tvBreakdown = findViewById(R.id.tvAppsBreakdown)
+        
+        // Setup click listener for navigation to Apps tab
+        setOnClickListener {
+            onCardClickListener?.invoke()
+        }
     }
 
     /**
      * Update the card with app counts.
+     * Displays total count prominently and breakdown in "X User | Y System" format.
      */
     fun update(counts: AppCounts) {
-        tvTotal.text = context.getString(R.string.dashboard_apps_total, counts.total)
-        tvUser.text = context.getString(R.string.dashboard_apps_user, counts.userApps)
-        tvSystem.text = context.getString(R.string.dashboard_apps_system, counts.systemApps)
+        // Display total count prominently (just the number)
+        tvTotal.text = counts.total.toString()
+        
+        // Display breakdown in "X User | Y System" format
+        tvBreakdown.text = context.getString(
+            R.string.dashboard_apps_count,
+            counts.userApps,
+            counts.systemApps
+        )
     }
 
     /**
@@ -55,9 +72,8 @@ class AppsCard @JvmOverloads constructor(
      */
     fun setLoading(loading: Boolean) {
         if (loading) {
-            tvTotal.text = "-- Total"
-            tvUser.text = "-- User"
-            tvSystem.text = "-- System"
+            tvTotal.text = "--"
+            tvBreakdown.text = "-- User | -- System"
         }
     }
 }

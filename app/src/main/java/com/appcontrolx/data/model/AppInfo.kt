@@ -32,6 +32,11 @@ data class AppInfo(
     val lastUpdateTime: Long,
     val size: Long = 0L,
     /**
+     * The UID of the application, used for appops commands.
+     * Requirements: 4.1, 4.2
+     */
+    val uid: Int = 0,
+    /**
      * The running state of the app detected via multi-method detection.
      * Requirements: 4.6
      */

@@ -13,10 +13,8 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:navigationIcon="@drawable/ic_launcher_foreground"
-            app:navigationIconTint="?attr/colorPrimary"
             app:title="@string/app_name"
-            app:titleCentered="true"
+            app:titleCentered="false"
             app:menu="@menu/menu_main_overflow" />
 
         <com.google.android.material.tabs.TabLayout

@@ -252,6 +252,7 @@ class AppScanner @Inject constructor(
                     installedTime = pkg.firstInstallTime,
                     lastUpdateTime = pkg.lastUpdateTime,
                     size = getAppSize(appInfo),
+                    uid = appInfo.uid,
                     runningState = runningState
                 )
             } catch (e: Exception) {

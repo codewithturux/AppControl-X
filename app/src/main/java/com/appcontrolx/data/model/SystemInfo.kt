@@ -6,7 +6,8 @@ package com.appcontrolx.data.model
 data class CpuInfo(
     val usagePercent: Float,
     val temperature: Float?,  // Celsius, null if unavailable
-    val cores: Int
+    val cores: Int,
+    val coreFrequencies: List<Long> = emptyList()  // MHz per core
 )
 
 /**

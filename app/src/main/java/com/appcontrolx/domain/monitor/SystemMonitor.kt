@@ -184,7 +184,39 @@ class SystemMonitor @Inject constructor(
     }
     
     /**
-     * Get complete CPU info including usage, temperature, and core count.
+     * Get current frequency for each CPU core in MHz.
+     * Reads from /sys/devices/system/cpu/cpuX/cpufreq/scaling_cur_freq.
+     * 
+     * @return List of frequencies in MHz for each core, empty list if unavailable
+     */
+    suspend fun getCoreFrequencies(): List<Long> = withContext(Dispatchers.IO) {
+        val frequencies = mutableListOf<Long>()
+        val cpuDir = File("/sys/devices/system/cpu/")
+        
+        var coreIndex = 0
+        while (true) {
+            val freqFile = File(cpuDir, "cpu$coreIndex/cpufreq/scaling_cur_freq")
+            if (!freqFile.exists()) break
+            
+            try {
+                if (freqFile.canRead()) {
+                    val freqKhz = freqFile.readText().trim().toLongOrNull() ?: 0L
+                    // Convert kHz to MHz
+                    frequencies.add(freqKhz / 1000)
+                } else {
+                    frequencies.add(0L)
+                }
+            } catch (e: Exception) {
+                frequencies.add(0L)
+            }
+            coreIndex++
+        }
+        
+        frequencies
+    }
+    
+    /**
+     * Get complete CPU info including usage, temperature, core count, and frequencies.
      * 
      * @return CpuInfo data class
      */
@@ -192,7 +224,8 @@ class SystemMonitor @Inject constructor(
         return CpuInfo(
             usagePercent = getCpuUsage(),
             temperature = getCpuTemperature(),
-            cores = getCpuCores()
+            cores = getCpuCores(),
+            coreFrequencies = getCoreFrequencies()
         )
     }
     

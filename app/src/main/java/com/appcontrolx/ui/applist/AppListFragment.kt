@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.appcontrolx.R
 import com.appcontrolx.data.model.AppInfo
 import com.appcontrolx.data.model.AppListFilter
+import com.appcontrolx.data.model.AppTypeFilter
+import com.appcontrolx.data.model.BatchAction
 import com.appcontrolx.data.model.ExecutionMode
 import com.appcontrolx.databinding.FragmentAppListBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -42,6 +44,9 @@ class AppListFragment : Fragment(), FilterSortCallback {
     private val viewModel: AppListViewModel by viewModels()
     
     private lateinit var adapter: AppListAdapter
+    
+    // Track progress dialog for batch operations
+    private var progressDialog: BatchProgressDialog? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -134,10 +139,11 @@ class AppListFragment : Fragment(), FilterSortCallback {
 
     /**
      * Update filter button text based on current filter.
+     * Shows app type filter (User/System/All) as the primary label.
      * Requirement: 3.8
      */
     private fun updateFilterButtonText(filter: AppListFilter) {
-        binding.btnFilter.text = filter.filterType.displayName
+        binding.btnFilter.text = filter.appTypeFilter.displayName
     }
 
     /**
@@ -192,6 +198,7 @@ class AppListFragment : Fragment(), FilterSortCallback {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
                     updateUi(state)
+                    handleBatchExecutionState(state.batchExecutionState)
                 }
             }
         }
@@ -305,18 +312,109 @@ class AppListFragment : Fragment(), FilterSortCallback {
 
     /**
      * Show action sheet for batch operations.
+     * Creates and shows ActionBottomSheet with selected apps.
+     * 
+     * Requirements: 1.1, 1.6
      */
     private fun showActionSheet() {
         val selectedApps = adapter.getSelectedApps()
         if (selectedApps.isEmpty()) return
         
+        // Requirement 1.6: Show error dialog if execution mode is None
         if (viewModel.uiState.value.executionMode == ExecutionMode.None) {
             showModeRequiredDialog()
             return
         }
         
-        // TODO: Implement in task 12.5 - ActionBottomSheet integration
-        // For now, show a placeholder dialog
+        // Requirement 1.1: Display ActionBottomSheet when user taps Execute
+        ActionBottomSheet.show(
+            fragmentManager = childFragmentManager,
+            selectedApps = selectedApps,
+            onActionSelected = { action, apps ->
+                executeBatchAction(action, apps)
+            }
+        )
+    }
+    
+    /**
+     * Execute batch action on selected apps.
+     * Delegates to ViewModel for actual execution.
+     * 
+     * Requirements: 2.1
+     */
+    private fun executeBatchAction(action: BatchAction, apps: List<AppInfo>) {
+        viewModel.executeBatchAction(action, apps)
+    }
+    
+    /**
+     * Handle batch execution state changes.
+     * Shows progress dialog during execution and result dialog on completion.
+     * 
+     * Requirements: 2.2, 3.4, 3.5
+     */
+    private fun handleBatchExecutionState(state: BatchExecutionState) {
+        when (state) {
+            is BatchExecutionState.Idle -> {
+                // Dismiss progress dialog if showing
+                progressDialog?.dismiss()
+                progressDialog = null
+            }
+            
+            is BatchExecutionState.Executing -> {
+                // Show or update progress dialog (Requirement 2.2)
+                if (progressDialog == null) {
+                    progressDialog = BatchProgressDialog.show(
+                        fragmentManager = childFragmentManager,
+                        action = state.action,
+                        totalCount = state.totalCount,
+                        onCancelled = {
+                            // Cancel is not fully implemented - just dismiss
+                            viewModel.resetBatchExecutionState()
+                        }
+                    )
+                } else {
+                    progressDialog?.updateProgress(state.currentIndex, state.currentPackageName)
+                }
+            }
+            
+            is BatchExecutionState.Completed -> {
+                // Dismiss progress dialog
+                progressDialog?.dismiss()
+                progressDialog = null
+                
+                // Show result dialog (Requirement 3.4)
+                BatchResultDialog.show(
+                    fragmentManager = childFragmentManager,
+                    result = state.result,
+                    onDismissed = {
+                        // Refresh app list after completion (Requirement 3.4)
+                        viewModel.refreshApps()
+                        
+                        // Clear selection after success (Requirement 3.5)
+                        adapter.deselectAll()
+                        viewModel.onSelectionChanged(0)
+                        
+                        // Reset batch execution state
+                        viewModel.resetBatchExecutionState()
+                    }
+                )
+            }
+            
+            is BatchExecutionState.Error -> {
+                // Dismiss progress dialog
+                progressDialog?.dismiss()
+                progressDialog = null
+                
+                // Show error dialog
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.error_batch_title)
+                    .setMessage(state.message)
+                    .setPositiveButton(android.R.string.ok) { _, _ ->
+                        viewModel.resetBatchExecutionState()
+                    }
+                    .show()
+            }
+        }
     }
 
     /**

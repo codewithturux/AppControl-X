@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.FragmentManager
 import com.appcontrolx.R
 import com.appcontrolx.data.model.AppListFilter
+import com.appcontrolx.data.model.AppTypeFilter
 import com.appcontrolx.data.model.FilterType
 import com.appcontrolx.data.model.SortType
 import com.appcontrolx.databinding.BottomSheetFilterSortBinding
@@ -34,6 +35,7 @@ class FilterSortBottomSheet : BottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "FilterSortBottomSheet"
+        private const val ARG_APP_TYPE_FILTER = "app_type_filter"
         private const val ARG_FILTER_TYPE = "filter_type"
         private const val ARG_SORT_TYPE = "sort_type"
 
@@ -50,6 +52,7 @@ class FilterSortBottomSheet : BottomSheetDialogFragment() {
         ) {
             val fragment = FilterSortBottomSheet().apply {
                 arguments = Bundle().apply {
+                    putString(ARG_APP_TYPE_FILTER, currentFilter.appTypeFilter.name)
                     putString(ARG_FILTER_TYPE, currentFilter.filterType.name)
                     putString(ARG_SORT_TYPE, currentFilter.sortType.name)
                 }
@@ -62,9 +65,11 @@ class FilterSortBottomSheet : BottomSheetDialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let { args ->
+            val appTypeFilterName = args.getString(ARG_APP_TYPE_FILTER, AppTypeFilter.USER.name)
             val filterTypeName = args.getString(ARG_FILTER_TYPE, FilterType.ALL.name)
             val sortTypeName = args.getString(ARG_SORT_TYPE, SortType.NAME_ASC.name)
             currentFilter = AppListFilter(
+                appTypeFilter = AppTypeFilter.valueOf(appTypeFilterName),
                 filterType = FilterType.valueOf(filterTypeName),
                 sortType = SortType.valueOf(sortTypeName)
             )
@@ -82,10 +87,27 @@ class FilterSortBottomSheet : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupAppTypeRadioButtons()
         setupFilterRadioButtons()
         setupSortRadioButtons()
         setupApplyButton()
         restoreSelection()
+    }
+
+    /**
+     * Setup app type radio button listeners (User/System/All).
+     */
+    private fun setupAppTypeRadioButtons() {
+        binding.rgAppType.setOnCheckedChangeListener { _, checkedId ->
+            currentFilter = currentFilter.copy(
+                appTypeFilter = when (checkedId) {
+                    R.id.rbAppTypeUser -> AppTypeFilter.USER
+                    R.id.rbAppTypeSystem -> AppTypeFilter.SYSTEM
+                    R.id.rbAppTypeAll -> AppTypeFilter.ALL
+                    else -> AppTypeFilter.USER
+                }
+            )
+        }
     }
 
     /**
@@ -136,6 +158,14 @@ class FilterSortBottomSheet : BottomSheetDialogFragment() {
      * Restore the current filter/sort selection in the UI.
      */
     private fun restoreSelection() {
+        // Restore app type selection
+        val appTypeRadioId = when (currentFilter.appTypeFilter) {
+            AppTypeFilter.USER -> R.id.rbAppTypeUser
+            AppTypeFilter.SYSTEM -> R.id.rbAppTypeSystem
+            AppTypeFilter.ALL -> R.id.rbAppTypeAll
+        }
+        binding.rgAppType.check(appTypeRadioId)
+
         // Restore filter selection
         val filterRadioId = when (currentFilter.filterType) {
             FilterType.ALL -> R.id.rbFilterAll

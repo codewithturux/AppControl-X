@@ -19,7 +19,7 @@
             android:layout_height="@dimen/card_icon_size_large"
             android:src="@drawable/ic_speed"
             app:tint="?attr/colorPrimary"
-            android:contentDescription="@string/dashboard_cpu" />
+            android:contentDescription="@string/a11y_cpu_icon" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -31,7 +31,17 @@
             android:textColor="?attr/colorOnSurface" />
     </LinearLayout>
 
-    <!-- Usage display with progress bar -->
+    <!-- Real-time CPU Graph -->
+    <com.appcontrolx.ui.dashboard.cards.CpuGraphView
+        android:id="@+id/cpuGraph"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:layout_marginTop="12dp"
+        app:graphLineColor="?attr/colorPrimary"
+        app:graphFillColor="?attr/colorPrimary"
+        app:graphStrokeWidth="3dp" />
+
+    <!-- Usage percentage and progress bar -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -43,7 +53,7 @@
             android:id="@+id/tvCpuUsage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="32sp"
+            android:textSize="28sp"
             android:textStyle="bold"
             android:textColor="?attr/colorPrimary"
             tools:text="45%" />
@@ -51,30 +61,52 @@
         <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/progressCpu"
             android:layout_width="0dp"
-            android:layout_height="8dp"
+            android:layout_height="6dp"
             android:layout_weight="1"
-            android:layout_marginHorizontal="16dp"
-            app:trackThickness="8dp"
-            app:trackCornerRadius="4dp"
+            android:layout_marginHorizontal="12dp"
+            app:trackThickness="6dp"
+            app:trackCornerRadius="3dp"
             tools:progress="45" />
+    </LinearLayout>
+
+    <!-- Temperature and Core Count Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp"
+        android:gravity="center_vertical">
 
         <TextView
             android:id="@+id/tvCpuTemp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="16sp"
+            android:textSize="14sp"
             android:textColor="@color/on_surface_secondary"
-            tools:text="42°C" />
+            tools:text="48°C" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/tvCpuCores"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            android:textColor="@color/on_surface_secondary"
+            tools:text="8 cores" />
     </LinearLayout>
 
-    <!-- Core count -->
-    <TextView
-        android:id="@+id/tvCpuCores"
-        android:layout_width="wrap_content"
+    <!-- Core Frequencies Grid (2 columns) -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvCoreFrequencies"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:textSize="12sp"
-        android:textColor="@color/on_surface_secondary"
-        tools:text="8 cores" />
+        android:layout_marginTop="12dp"
+        android:nestedScrollingEnabled="false"
+        tools:listitem="@layout/item_core_frequency"
+        tools:itemCount="8" />
 
 </LinearLayout>

@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- FeatureCard custom attributes -->
-    <declare-styleable name="FeatureCard">
-        <attr name="featureIcon" format="reference" />
-        <attr name="featureLabel" format="reference|string" />
-        <attr name="featureIconTint" format="reference|color" />
+    <!-- CpuGraphView custom attributes -->
+    <declare-styleable name="CpuGraphView">
+        <!-- Color of the line graph -->
+        <attr name="graphLineColor" format="reference|color" />
+        <!-- Color used for the fill gradient below the line -->
+        <attr name="graphFillColor" format="reference|color" />
+        <!-- Width of the line stroke -->
+        <attr name="graphStrokeWidth" format="dimension" />
     </declare-styleable>
 </resources>

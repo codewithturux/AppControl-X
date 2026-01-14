@@ -4,31 +4,35 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.appcontrolx.R
 import com.appcontrolx.data.model.*
 import com.appcontrolx.databinding.FragmentDashboardBinding
+import com.appcontrolx.ui.MainPagerAdapter
+import com.appcontrolx.ui.MainActivity
+import com.appcontrolx.ui.dashboard.cards.CpuGraphView
 import com.appcontrolx.ui.history.ActionHistoryBottomSheet
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
 
 /**
  * Dashboard fragment displaying real-time system information and quick access to features.
  * 
  * Shows:
- * - CPU usage and temperature (wide card at top)
- * - Grid of system info cards (Battery, Network, RAM, Storage, Display, GPU)
+ * - CPU usage with real-time graph and per-core frequencies
+ * - Grid of system info cards (Battery, RAM, Storage, Display)
  * - Apps count card
- * - Feature quick access cards
  * - Device info card at bottom
  * 
- * Requirements: 0.1, 0.2, 0.3
+ * Requirements: 0.1, 0.2, 0.3, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6
  */
 @AndroidEntryPoint
 class DashboardFragment : Fragment() {
@@ -37,6 +41,12 @@ class DashboardFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: DashboardViewModel by viewModels()
+    
+    // Graph data points (last 60 seconds)
+    private val graphData = mutableListOf<Float>()
+    
+    // Core frequency adapter
+    private val coreFrequencyAdapter = CoreFrequencyAdapter()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,9 +60,22 @@ class DashboardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
+        setupCpuCard()
         setupClickListeners()
         observeUiState()
         observeNavigationEvents()
+    }
+    
+    /**
+     * Setup the CPU card with graph and core frequency RecyclerView.
+     */
+    private fun setupCpuCard() {
+        // Setup core frequency RecyclerView with 2 columns
+        binding.rvCoreFrequencies.apply {
+            layoutManager = GridLayoutManager(requireContext(), 2)
+            adapter = coreFrequencyAdapter
+            isNestedScrollingEnabled = false
+        }
     }
 
     private fun setupClickListeners() {
@@ -60,30 +83,23 @@ class DashboardFragment : Fragment() {
         binding.btnSettings.setOnClickListener {
             viewModel.onSettingsClicked()
         }
-
-        // Feature cards - delegate to ViewModel
-        binding.cardFeatureApps.setOnClickListener {
-            viewModel.onFeatureCardClicked(FeatureDestination.APP_MANAGER)
+        
+        // Apps card click - navigate to Apps tab
+        binding.cardApps.setOnClickListener {
+            navigateToAppsTab()
         }
-
-        binding.cardFeatureBattery.setOnClickListener {
-            viewModel.onFeatureCardClicked(FeatureDestination.BATTERY_MANAGER)
-        }
-
-        binding.cardFeatureActivity.setOnClickListener {
-            viewModel.onFeatureCardClicked(FeatureDestination.ACTIVITY_LAUNCHER)
-        }
-
-        binding.cardFeatureTools.setOnClickListener {
-            viewModel.onFeatureCardClicked(FeatureDestination.TOOLS)
-        }
-
-        binding.cardFeatureLogs.setOnClickListener {
-            viewModel.onFeatureCardClicked(FeatureDestination.ACTION_LOGS)
-        }
-
-        binding.cardFeatureSettings.setOnClickListener {
-            viewModel.onFeatureCardClicked(FeatureDestination.SETTINGS)
+    }
+    
+    /**
+     * Navigate to the Apps tab in the ViewPager.
+     * Requirement 4.4: WHEN user taps Apps_Card, THE System SHALL navigate to Apps tab
+     */
+    private fun navigateToAppsTab() {
+        // Get the parent activity and access the ViewPager
+        (activity as? MainActivity)?.let { mainActivity ->
+            // Navigate to Apps tab (position 1)
+            mainActivity.findViewById<androidx.viewpager2.widget.ViewPager2>(R.id.viewPager)
+                ?.setCurrentItem(MainPagerAdapter.POSITION_APPS, true)
         }
     }
 
@@ -99,7 +115,7 @@ class DashboardFragment : Fragment() {
     
     /**
      * Observe navigation events from ViewModel.
-     * Handles one-time navigation events for feature card clicks.
+     * Handles one-time navigation events for settings button clicks.
      */
     private fun observeNavigationEvents() {
         viewLifecycleOwner.lifecycleScope.launch {
@@ -129,12 +145,9 @@ class DashboardFragment : Fragment() {
         try {
             val navController = findNavController()
             when (destination) {
-                FeatureDestination.APP_MANAGER -> navController.navigate(R.id.appListFragment)
-                FeatureDestination.BATTERY_MANAGER -> navController.navigate(R.id.appListFragment) // Battery manager is part of app list
-                FeatureDestination.ACTIVITY_LAUNCHER -> navController.navigate(R.id.appListFragment) // Activity launcher can be accessed from app list
-                FeatureDestination.TOOLS -> navController.navigate(R.id.settingsFragment) // Tools features are in settings
-                FeatureDestination.ACTION_LOGS -> showActionHistoryBottomSheet()
                 FeatureDestination.SETTINGS -> navController.navigate(R.id.settingsFragment)
+                FeatureDestination.ACTION_LOGS -> showActionHistoryBottomSheet()
+                else -> { /* Other destinations removed */ }
             }
         } catch (e: Exception) {
             // Navigation not available or destination not found
@@ -157,16 +170,12 @@ class DashboardFragment : Fragment() {
         state.systemSnapshot?.let { snapshot ->
             updateCpuCard(snapshot.cpu)
             updateBatteryCard(snapshot.battery)
-            updateNetworkCard(snapshot.network)
             updateRamCard(snapshot.ram)
             updateStorageCard(snapshot.storage)
         }
         
         // Update display info
         state.displayInfo?.let { updateDisplayCard(it) }
-        
-        // Update GPU info
-        updateGpuCard(state.gpuInfo)
         
         // Update app counts
         state.appCounts?.let { updateAppsCard(it) }
@@ -189,14 +198,38 @@ class DashboardFragment : Fragment() {
         binding.tvCpuUsage.text = getString(R.string.dashboard_percent_format, usagePercent)
         binding.progressCpu.progress = usagePercent
         
+        // Add data point to graph
+        addGraphDataPoint(cpu.usagePercent)
+        
+        // Update temperature
         cpu.temperature?.let { temp ->
             binding.tvCpuTemp.text = getString(R.string.dashboard_temp_format, temp)
             binding.tvCpuTemp.visibility = View.VISIBLE
         } ?: run {
-            binding.tvCpuTemp.visibility = View.GONE
+            binding.tvCpuTemp.text = getString(R.string.status_not_available)
+            binding.tvCpuTemp.visibility = View.VISIBLE
         }
         
+        // Update core count
         binding.tvCpuCores.text = getString(R.string.dashboard_cpu_cores, cpu.cores)
+        
+        // Update core frequencies
+        coreFrequencyAdapter.updateFrequencies(cpu.coreFrequencies)
+    }
+    
+    /**
+     * Add a data point to the CPU graph.
+     */
+    private fun addGraphDataPoint(value: Float) {
+        graphData.add(value.coerceIn(0f, 100f))
+        
+        // Trim to max data points (60)
+        while (graphData.size > CpuGraphView.MAX_DATA_POINTS) {
+            graphData.removeAt(0)
+        }
+        
+        // Update graph view
+        binding.cpuGraph.setData(graphData)
     }
 
     private fun updateBatteryCard(battery: BatteryInfo) {
@@ -223,47 +256,7 @@ class DashboardFragment : Fragment() {
         binding.ivBatteryIcon.setColorFilter(requireContext().getColor(iconTint))
     }
 
-    private fun updateNetworkCard(network: NetworkInfo) {
-        val typeText = when (network.type) {
-            NetworkType.WIFI -> "WiFi"
-            NetworkType.MOBILE -> "Mobile"
-            NetworkType.ETHERNET -> "Ethernet"
-            NetworkType.NONE -> getString(R.string.dashboard_network_disconnected)
-        }
-        binding.tvNetworkType.text = typeText
-        
-        val detailText = when {
-            network.type == NetworkType.WIFI && network.ssid != null -> network.ssid
-            network.type == NetworkType.MOBILE -> "Cellular"
-            network.isConnected -> getString(R.string.status_available)
-            else -> getString(R.string.status_not_available)
-        }
-        binding.tvNetworkDetail.text = detailText
-        
-        // Show signal strength percentage if available
-        network.signalPercent?.let { percent ->
-            binding.tvSignalStrength.text = getString(R.string.dashboard_signal_strength, percent)
-            binding.tvSignalStrength.visibility = View.VISIBLE
-        } ?: run {
-            binding.tvSignalStrength.visibility = View.GONE
-        }
-        
-        // Show signal dBm if available
-        network.signalDbm?.let { dbm ->
-            binding.tvSignalDbm.text = getString(R.string.dashboard_signal_dbm, dbm)
-            binding.tvSignalDbm.visibility = View.VISIBLE
-        } ?: run {
-            binding.tvSignalDbm.visibility = View.GONE
-        }
-        
-        // Update icon color based on connection status
-        val iconTint = if (network.isConnected) R.color.status_positive else R.color.status_neutral
-        binding.ivNetworkIcon.setColorFilter(requireContext().getColor(iconTint))
-    }
-
     private fun updateRamCard(ram: RamInfo) {
-        val usedGb = bytesToGb(ram.usedBytes)
-        val totalGb = bytesToGb(ram.totalBytes)
         val percent = ram.usedPercent.toInt()
         
         // Update circular progress
@@ -296,91 +289,28 @@ class DashboardFragment : Fragment() {
         binding.tvDisplayRefresh.text = getString(R.string.dashboard_hz_format, display.refreshRate)
     }
 
-    private fun updateGpuCard(gpu: GpuInfo?) {
-        if (gpu != null) {
-            binding.tvGpuModel.text = gpu.model
-            gpu.vendor?.let {
-                binding.tvGpuVendor.text = it
-                binding.tvGpuVendor.visibility = View.VISIBLE
-            } ?: run {
-                binding.tvGpuVendor.visibility = View.GONE
-            }
-            
-            // Also show GPU model in Display card
-            binding.tvDisplayGpu.text = gpu.model
-            binding.tvDisplayGpu.visibility = View.VISIBLE
-        } else {
-            binding.tvGpuModel.text = getString(R.string.dashboard_gpu_unavailable)
-            binding.tvGpuVendor.visibility = View.GONE
-            binding.tvDisplayGpu.visibility = View.GONE
-        }
-    }
-
     private fun updateAppsCard(counts: AppCounts) {
-        binding.tvAppsTotal.text = getString(R.string.dashboard_apps_total, counts.total)
-        binding.tvAppsUser.text = getString(R.string.dashboard_apps_user, counts.userApps)
-        binding.tvAppsCount.text = getString(R.string.dashboard_apps_system, counts.systemApps)
+        // Display total count prominently (just the number)
+        binding.tvAppsTotal.text = counts.total.toString()
+        
+        // Display breakdown in "X User | Y System" format
+        binding.tvAppsBreakdown.text = getString(
+            R.string.dashboard_apps_count,
+            counts.userApps,
+            counts.systemApps
+        )
     }
 
 
     private fun updateDeviceInfoCard(device: DeviceInfo) {
-        // Device name
+        // Device name (compact format)
         binding.tvDeviceName.text = "${device.brand} ${device.model}"
         
-        // SoC/Processor name
-        device.socName?.let { soc ->
-            binding.tvSoc.text = soc
-            binding.layoutSoc.visibility = View.VISIBLE
-        } ?: run {
-            binding.layoutSoc.visibility = View.GONE
-        }
-        
-        // Android version with codename
-        val androidText = if (device.androidCodename != null) {
-            "Android ${device.androidVersion} (${device.androidCodename})"
-        } else {
-            "Android ${device.androidVersion} (API ${device.apiLevel})"
-        }
-        binding.tvAndroidVersion.text = androidText
-        
-        // Uptime
-        binding.tvUptime.text = formatDuration(device.uptimeMs)
-        
-        // Deep sleep with percentage (only shown in Root mode)
-        device.deepSleepMs?.let { deepSleep ->
-            binding.layoutDeepSleep.visibility = View.VISIBLE
-            val deepSleepPercent = if (device.uptimeMs > 0) {
-                ((deepSleep.toFloat() / device.uptimeMs) * 100).toInt()
-            } else {
-                0
-            }
-            binding.tvDeepSleep.text = "${formatDurationDetailed(deepSleep)} ($deepSleepPercent%)"
-        } ?: run {
-            binding.layoutDeepSleep.visibility = View.GONE
-        }
-        
-        // Kernel version
-        binding.tvKernel.text = device.kernelVersion
-        
-        // Build number
-        binding.tvBuild.text = device.buildNumber
+        // Android version (simplified)
+        binding.tvAndroidVersion.text = "Android ${device.androidVersion}"
     }
 
     // ==================== Utility Functions ====================
-
-    private fun bytesToGb(bytes: Long): Float {
-        return bytes / (1024f * 1024f * 1024f)
-    }
-
-    private fun formatSize(bytes: Long): String {
-        val gb = bytes / (1024.0 * 1024.0 * 1024.0)
-        return if (gb >= 1) {
-            String.format("%.1f GB", gb)
-        } else {
-            val mb = bytes / (1024.0 * 1024.0)
-            String.format("%.0f MB", mb)
-        }
-    }
     
     private fun formatSizeDetailed(bytes: Long): String {
         val gb = bytes / (1024.0 * 1024.0 * 1024.0)
@@ -392,34 +322,44 @@ class DashboardFragment : Fragment() {
         }
     }
 
-    private fun formatDuration(millis: Long): String {
-        val days = TimeUnit.MILLISECONDS.toDays(millis)
-        val hours = TimeUnit.MILLISECONDS.toHours(millis) % 24
-        val minutes = TimeUnit.MILLISECONDS.toMinutes(millis) % 60
-        
-        return buildString {
-            if (days > 0) append("${days}d ")
-            if (hours > 0 || days > 0) append("${hours}h ")
-            append("${minutes}m")
-        }.trim()
-    }
-    
-    private fun formatDurationDetailed(millis: Long): String {
-        val days = TimeUnit.MILLISECONDS.toDays(millis)
-        val hours = TimeUnit.MILLISECONDS.toHours(millis) % 24
-        val minutes = TimeUnit.MILLISECONDS.toMinutes(millis) % 60
-        val seconds = TimeUnit.MILLISECONDS.toSeconds(millis) % 60
-        
-        return buildString {
-            if (days > 0) append("${days}d ")
-            if (hours > 0 || days > 0) append("${hours}h ")
-            if (minutes > 0 || hours > 0 || days > 0) append("${minutes}m ")
-            append("${seconds}s")
-        }.trim()
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+    
+    /**
+     * Adapter for displaying core frequencies in a grid.
+     */
+    private inner class CoreFrequencyAdapter : RecyclerView.Adapter<CoreFrequencyAdapter.ViewHolder>() {
+        
+        private var frequencies: List<Long> = emptyList()
+        
+        fun updateFrequencies(newFrequencies: List<Long>) {
+            frequencies = newFrequencies
+            notifyDataSetChanged()
+        }
+        
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_core_frequency, parent, false)
+            return ViewHolder(view)
+        }
+        
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val frequency = frequencies.getOrNull(position) ?: 0L
+            holder.bind(position, frequency)
+        }
+        
+        override fun getItemCount(): Int = frequencies.size
+        
+        inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            private val tvCoreLabel: TextView = itemView.findViewById(R.id.tvCoreLabel)
+            private val tvCoreFrequency: TextView = itemView.findViewById(R.id.tvCoreFrequency)
+            
+            fun bind(coreIndex: Int, frequencyMhz: Long) {
+                tvCoreLabel.text = getString(R.string.dashboard_core_label, coreIndex)
+                tvCoreFrequency.text = getString(R.string.dashboard_core_frequency_mhz, frequencyMhz)
+            }
+        }
     }
 }

@@ -7,9 +7,14 @@ import android.content.IntentFilter
 import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.appcontrolx.data.model.ActionStatus
+import com.appcontrolx.data.model.AppActionResult
 import com.appcontrolx.data.model.AppInfo
 import com.appcontrolx.data.model.AppListFilter
 import com.appcontrolx.data.model.AppStatus
+import com.appcontrolx.data.model.AppTypeFilter
+import com.appcontrolx.data.model.BatchAction
+import com.appcontrolx.data.model.BatchExecutionResult
 import com.appcontrolx.data.model.ExecutionMode
 import com.appcontrolx.data.model.FilterType
 import com.appcontrolx.data.model.SortType
@@ -17,7 +22,10 @@ import com.appcontrolx.domain.executor.CommandExecutor
 import com.appcontrolx.domain.executor.PermissionBridge
 import com.appcontrolx.domain.executor.RootExecutor
 import com.appcontrolx.domain.executor.ShizukuExecutor
+import com.appcontrolx.domain.manager.AppControlManager
+import com.appcontrolx.domain.manager.BatteryManager
 import com.appcontrolx.domain.scanner.AppScanner
+import com.appcontrolx.domain.validator.SafetyValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -34,7 +42,7 @@ import javax.inject.Inject
  * ViewModel for AppListFragment.
  * Handles app loading, filtering, sorting, and selection state.
  * 
- * Requirements: 3.6, 3.7, 3.8
+ * Requirements: 3.6, 3.7, 3.8, 2.1, 2.2, 2.3, 2.4, 4.1, 4.2
  */
 @HiltViewModel
 class AppListViewModel @Inject constructor(
@@ -42,7 +50,9 @@ class AppListViewModel @Inject constructor(
     private val appScanner: AppScanner,
     private val permissionBridge: PermissionBridge,
     private val rootExecutor: RootExecutor,
-    private val shizukuExecutor: ShizukuExecutor
+    private val shizukuExecutor: ShizukuExecutor,
+    private val appControlManager: AppControlManager,
+    private val batteryManager: BatteryManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AppListUiState())
@@ -178,6 +188,21 @@ class AppListViewModel @Inject constructor(
     }
 
     /**
+     * Filter apps by app type (User/System/All).
+     * 
+     * @param apps List of apps to filter
+     * @param appTypeFilter The app type filter to apply
+     * @return Filtered list of apps
+     */
+    fun filterByAppType(apps: List<AppInfo>, appTypeFilter: AppTypeFilter): List<AppInfo> {
+        return when (appTypeFilter) {
+            AppTypeFilter.ALL -> apps
+            AppTypeFilter.USER -> apps.filter { !it.isSystemApp }
+            AppTypeFilter.SYSTEM -> apps.filter { it.isSystemApp }
+        }
+    }
+
+    /**
      * Filter apps based on the current filter type.
      * Requirement: 3.6
      * 
@@ -219,7 +244,10 @@ class AppListViewModel @Inject constructor(
         val currentState = _uiState.value
         var result = currentState.allApps
         
-        // Apply filter
+        // Apply app type filter first (User/System/All)
+        result = filterByAppType(result, currentState.appListFilter.appTypeFilter)
+        
+        // Apply status filter
         result = filterApps(result, currentState.appListFilter.filterType)
         
         // Apply search filter
@@ -297,5 +325,156 @@ class AppListViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         unregisterPackageReceiver()
+    }
+
+    /**
+     * Execute a batch action on multiple apps.
+     * Validates each app against SafetyValidator before execution.
+     * 
+     * Requirements: 2.1, 2.2, 2.3, 2.4, 4.1, 4.2
+     * 
+     * @param action The batch action to perform
+     * @param apps List of apps to perform the action on
+     */
+    fun executeBatchAction(action: BatchAction, apps: List<AppInfo>) {
+        if (apps.isEmpty()) return
+        
+        viewModelScope.launch {
+            val results = mutableListOf<AppActionResult>()
+            val totalCount = apps.size
+            
+            // Update state to executing
+            _uiState.update { 
+                it.copy(
+                    batchExecutionState = BatchExecutionState.Executing(
+                        action = action,
+                        currentIndex = 0,
+                        totalCount = totalCount,
+                        currentPackageName = apps.firstOrNull()?.packageName ?: ""
+                    )
+                )
+            }
+            
+            try {
+                apps.forEachIndexed { index, app ->
+                    // Update progress state
+                    _uiState.update {
+                        it.copy(
+                            batchExecutionState = BatchExecutionState.Executing(
+                                action = action,
+                                currentIndex = index + 1,
+                                totalCount = totalCount,
+                                currentPackageName = app.packageName
+                            )
+                        )
+                    }
+                    
+                    // Execute action on single app with safety validation
+                    val result = executeActionOnApp(action, app)
+                    results.add(result)
+                }
+                
+                // Create final result
+                val batchResult = BatchExecutionResult(
+                    action = action,
+                    results = results
+                )
+                
+                // Update state to completed
+                _uiState.update {
+                    it.copy(
+                        batchExecutionState = BatchExecutionState.Completed(batchResult)
+                    )
+                }
+                
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        batchExecutionState = BatchExecutionState.Error(
+                            e.message ?: "Unknown error during batch execution"
+                        )
+                    )
+                }
+            }
+        }
+    }
+    
+    /**
+     * Execute a single action on an app with safety validation.
+     * 
+     * Requirements: 4.1, 4.2
+     * 
+     * @param action The action to perform
+     * @param app The app to perform the action on
+     * @return AppActionResult with status and error message if any
+     */
+    private suspend fun executeActionOnApp(action: BatchAction, app: AppInfo): AppActionResult {
+        val packageName = app.packageName
+        val appName = app.appName
+        
+        // Check if package is critical - skip if so (Requirement 4.1, 4.2)
+        if (SafetyValidator.isCritical(packageName)) {
+            return AppActionResult(
+                packageName = packageName,
+                appName = appName,
+                status = ActionStatus.SKIPPED,
+                errorMessage = "Critical system package - skipped for safety"
+            )
+        }
+        
+        // Check if package is force-stop-only and action is not force-stop
+        if (SafetyValidator.isForceStopOnly(packageName) && action != BatchAction.FORCE_STOP) {
+            return AppActionResult(
+                packageName = packageName,
+                appName = appName,
+                status = ActionStatus.SKIPPED,
+                errorMessage = "Package only allows Force Stop action"
+            )
+        }
+        
+        // Execute the action
+        return withContext(Dispatchers.IO) {
+            try {
+                val result = when (action) {
+                    BatchAction.FREEZE -> appControlManager.freezeApp(packageName)
+                    BatchAction.UNFREEZE -> appControlManager.unfreezeApp(packageName)
+                    BatchAction.FORCE_STOP -> appControlManager.forceStop(packageName)
+                    BatchAction.RESTRICT_BACKGROUND -> batteryManager.restrictBackground(packageName, app.uid)
+                    BatchAction.ALLOW_BACKGROUND -> batteryManager.allowBackground(packageName, app.uid)
+                }
+                
+                if (result.isSuccess) {
+                    AppActionResult(
+                        packageName = packageName,
+                        appName = appName,
+                        status = ActionStatus.SUCCESS
+                    )
+                } else {
+                    AppActionResult(
+                        packageName = packageName,
+                        appName = appName,
+                        status = ActionStatus.FAILED,
+                        errorMessage = result.exceptionOrNull()?.message ?: "Unknown error"
+                    )
+                }
+            } catch (e: Exception) {
+                AppActionResult(
+                    packageName = packageName,
+                    appName = appName,
+                    status = ActionStatus.FAILED,
+                    errorMessage = e.message ?: "Unknown error"
+                )
+            }
+        }
+    }
+    
+    /**
+     * Reset batch execution state to idle.
+     * Called after user dismisses result dialog.
+     * 
+     * Requirement: 3.4
+     */
+    fun resetBatchExecutionState() {
+        _uiState.update { it.copy(batchExecutionState = BatchExecutionState.Idle) }
     }
 }

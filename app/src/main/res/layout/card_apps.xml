@@ -4,19 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="@dimen/card_padding">
-
-    <!-- Overflow menu icon at top-right -->
-    <ImageView
-        android:id="@+id/ivOverflowMenu"
-        android:layout_width="@dimen/overflow_menu_size"
-        android:layout_height="@dimen/overflow_menu_size"
-        android:layout_gravity="top|end"
-        android:src="@drawable/ic_more_vert"
-        app:tint="@color/on_surface_secondary"
-        android:contentDescription="@string/a11y_expand_more"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:padding="2dp" />
+    android:padding="@dimen/card_padding"
+    android:foreground="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -46,34 +37,26 @@
                 android:textColor="@color/on_surface_secondary" />
         </LinearLayout>
 
-        <!-- Total apps count (prominent) -->
+        <!-- Total apps count (prominent - large text) -->
         <TextView
             android:id="@+id/tvAppsTotal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:textSize="24sp"
+            android:textSize="32sp"
             android:textStyle="bold"
             android:textColor="?attr/colorOnSurface"
-            tools:text="94 Total" />
+            tools:text="94" />
 
-        <!-- User apps count -->
+        <!-- User | System breakdown (single line) -->
         <TextView
-            android:id="@+id/tvAppsUser"
+            android:id="@+id/tvAppsBreakdown"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:textSize="12sp"
             android:textColor="@color/on_surface_secondary"
-            tools:text="64 User" />
-
-        <!-- System apps count -->
-        <TextView
-            android:id="@+id/tvAppsSystem"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="12sp"
-            android:textColor="@color/on_surface_secondary"
-            tools:text="30 System" />
+            tools:text="64 User | 30 System" />
 
     </LinearLayout>
 

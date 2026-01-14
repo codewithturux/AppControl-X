@@ -25,7 +25,9 @@
     <string name="dashboard_feature_tools">Tools</string>
     <string name="dashboard_feature_logs">Logs</string>
     <string name="dashboard_cpu_cores">%d cores</string>
-    <string name="dashboard_apps_count">%1$d user • %2$d system</string>
+    <string name="dashboard_core_label">Core %d</string>
+    <string name="dashboard_core_frequency_mhz">%d MHz</string>
+    <string name="dashboard_apps_count">%1$d User | %2$d System</string>
     <string name="dashboard_network_disconnected">Disconnected</string>
     <string name="dashboard_gpu_unavailable">N/A</string>
     <string name="dashboard_temp_format">%.0f°C</string>
@@ -441,7 +443,11 @@
     
     <!-- Filter/Sort Bottom Sheet -->
     <string name="filter_sort_title">Filter &amp; Sort</string>
-    <string name="filter_section_title">Filter</string>
+    <string name="app_type_section_title">App Type</string>
+    <string name="app_type_user">User Apps</string>
+    <string name="app_type_system">System Apps</string>
+    <string name="app_type_all">All Apps</string>
+    <string name="filter_section_title">Status</string>
     <string name="sort_section_title">Sort by</string>
     <string name="sort_name_asc">Name (A-Z)</string>
     <string name="sort_name_desc">Name (Z-A)</string>
@@ -488,6 +494,9 @@
     <string name="batch_partial_success">%1$d success, %2$d failed</string>
     <string name="batch_waiting">Waiting to start...</string>
     <string name="batch_countdown">Starting in %d...</string>
+    <string name="batch_current_app">Current:</string>
+    <string name="batch_executing">Executing %s…</string>
+    <string name="batch_cancelled">Operation cancelled</string>
     <string name="btn_cancel">Cancel</string>
     <string name="status_negative">Failed</string>
     
@@ -505,4 +514,18 @@
     <string name="settings_rollback_confirm">Rollback the last action? This will restore apps to their previous state.</string>
     <string name="settings_rollback_success">Rollback completed successfully</string>
     <string name="settings_rollback_failed">Rollback failed: %s</string>
+    
+    <!-- Batch Result Dialog -->
+    <string name="batch_result_title">Execution Complete</string>
+    <string name="batch_result_success">%d succeeded</string>
+    <string name="batch_result_failed">%d failed</string>
+    <string name="batch_result_skipped">%d skipped</string>
+    <string name="batch_result_skipped_status">Skipped</string>
+    <string name="batch_result_view_details">View Details</string>
+    <string name="batch_result_hide_details">Hide Details</string>
+    <string name="batch_result_done">Done</string>
+    <string name="batch_result_details">Details</string>
+    
+    <!-- Batch Errors -->
+    <string name="error_batch_title">Batch Execution Error</string>
 </resources>
